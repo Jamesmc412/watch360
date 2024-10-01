@@ -1,0 +1,102 @@
+@import url("https://fonts.cdnfonts.com/css/gotham-rounded");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Gotham Rounded", sans-serif;
+}
+
+:root {
+  --primary-bg: #ffffff;
+}
+
+.settings-panel {
+  --panel-bg: #0e7a0d;
+  --heading-color: #ffffff;
+  --settings-info-color: #ffffff;
+
+  --checkbox-bg-unchecked: #d9d9d9;
+  --checkbox-bg-checked: var(--primary-bg);
+  --checkbox-switch-color: #ffffff;
+}
+
+.settings-panel.dark {
+  --panel-bg: #46535a;
+  --heading-color: #e5ecf0;
+  --settings-info-color: #e5ecf0;
+
+  --checkbox-bg-unchecked: #677176;
+  --checkbox-bg-checked: var(--primary-bg);
+  --checkbox-switch-color: #46535a;
+
+}
+
+body{
+  background-color: var(--primary-bg);
+  background-image: url(../images/smallxbox.png);
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  background-size: 250px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center
+}
+
+.settings-panel{
+  background-color: var(--panel-bg);
+  padding: 2rem;
+  width: 80%;
+  max-width: 550px;
+  border-radius: 1rem;
+  box-shadow: 0 12px 12px rgba(black, 0.15);
+
+  header{
+    color: var(--heading-color);
+    margin-bottom: 2rem;
+  }
+
+  .setting{
+    margin: 2rem auto;
+    color: var(--settings-info-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    label {
+      width: 80%;
+      span {
+        display: block;
+        &:last-of-type {
+          font-weight: 300;
+        }
+      }
+    }
+    input{
+      appearance: none;
+      -webkit-appearance: none;
+      width: 50px;
+      height: 25px;
+      border-radius: 25px;
+      background-color: var(--checkbox-bg-unchecked);
+      position: relative;
+      transition: background-color .3s ease;
+      &::after {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        height: 23px;
+        width: 23px;
+        border-radius: 50%;
+        background-color: var(--checkbox-switch-color);
+      }
+      &:checked{
+        background-color: var(--checkbox-bg-checked);
+        &::after{
+          left:70%;
+        }
+      }
+    }
+  }
+}
