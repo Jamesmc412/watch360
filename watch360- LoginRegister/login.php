@@ -60,8 +60,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         body {
-            background-color: black;
-            color: white;
+            background-color: white;
+            color: black;
+            position: relative;
+            min-height: 100vh; /* Ensure the body covers full viewport height */
+            margin: 0;
+            padding-bottom: 100px; /* Space for image */
         }
 
         /* Make the "Register here" link green */
@@ -79,6 +83,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
         .btn-primary:hover {
             background-color: darkgreen;
             border-color: darkgreen;
+        }
+
+        /* Style for the image at the bottom */
+        .bottom-image {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px; /* Increased size to make the image larger */
+            height: auto; /* Maintain aspect ratio */
         }
     </style>
 </head>
@@ -111,5 +125,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit'])) {
             </div>
         </div>
     </div>
+
+    <!-- XBOX Image positioned at the bottom of the page -->
+    <img src="smallxbox.png" alt="Small Xbox" class="bottom-image">
 </body>
 </html>
