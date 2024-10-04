@@ -29,7 +29,12 @@
             font-size: 24px;
         }
 
-        .settings-btn {
+         .header-buttons {
+            display: flex;
+            gap: 10px; /* Space between buttons */
+        }
+
+        .header-buttons .settings-btn, .header-buttons .logout-btn {
             background-color: transparent;
             border: none;
             color: black;
@@ -39,13 +44,9 @@
             align-items: center;
         }
 
-        .settings-btn i {
+        .header-buttons .settings-btn i, .header-buttons .logout-btn i {
             margin-right: 8px;
             font-size: 24px;
-        }
-
-        .settings-btn:hover {
-            text-decoration: underline;
         }
 
         .sidebar {
@@ -109,21 +110,33 @@
             color: #bbb;
         }
 
+        .currently-watching {
+            font-size: 14px;
+            color: #ccc; /* Lighter color for "Currently watching" */
+            margin-top: 10px;
+        }
+
+
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>Watch360</h1>
-        <button class="settings-btn" onclick="location.href='settings.php'">
-           Settings
-        </button>
+         <div class="header-buttons">
+            <button class="settings-btn" onclick="location.href='settings.php'">
+                Settings
+            </button>
+            <button class="logout-btn" onclick="location.href='logout.php'">
+                Logout
+            </button>
+        </div>
     </div>
 
     <div class="sidebar">
         <h3>Search People</h3>
         <form action="search_results.php" method="get">
-            <input type="text" name="friend_name" placeholder="search by username" required>
+            <input type="text" name="friend_name" placeholder="Search by username" required>
             <button type="submit">Search</button>
         </form>
     </div>
@@ -135,14 +148,17 @@
             <div class="friend-card">
                 <h2>Friend 1</h2>
                 <p>Online</p>
+                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
             </div>
             <div class="friend-card">
                 <h2>Friend 2</h2>
                 <p>Offline</p>
+                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
             </div>
             <div class="friend-card">
                 <h2>Friend 3</h2>
                 <p>Online</p>
+                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
             </div>
             <!-- Add more friends here -->
         </div>
