@@ -1,13 +1,13 @@
 const express = require('express');
 const mysql = require('mysql');
 const app = express();
-const port = 3000;
+const port = 80;
 
 // Create connection to MySQL database
 const db = mysql.createConnection({
   host: 'localhost',
-  user: 'your_mysql_user',
-  password: 'your_mysql_password',
+  user: 'root',
+  password: '',
   database: 'watch360'
 });
 

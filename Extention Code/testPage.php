@@ -1,8 +1,8 @@
 <?php
 // Database connection settings
 $host = 'localhost'; // or your server's IP
-$user = 'your_mysql_user';
-$password = 'your_mysql_password';
+$user = 'root';
+$password = '';
 $database = 'watch360';
 
 // Create connection to the database
