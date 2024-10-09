@@ -14,15 +14,14 @@ CREATE TABLE IF NOT EXISTS `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;
 
 -- New `videos` table
-CREATE TABLE `videos` (
-  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) unsigned NOT NULL,  -- Foreign key referencing users
-  `video_id` varchar(255) NOT NULL,  -- YouTube video ID
-  `channel_name` varchar(255) NOT NULL,  -- YouTube channel name
-  `video_title` varchar(255) NOT NULL,  -- Title of the video
-  `video_length` int(11) NOT NULL,  -- Length of the video in seconds
-  `current_time` int(11) NOT NULL,  -- Current playback time in seconds
-  `added_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Time when this info was added
+CREATE TABLE IF NOT EXISTS `videos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(255) NOT NULL,
+  `video_id` varchar(255) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `channel` varchar(255) NOT NULL,
+  `length` varchar(10) NOT NULL,
+  `current_time` varchar(10) NOT NULL,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE  -- Cascade delete
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;
+  UNIQUE KEY `video_user_unique` (`video_id`, `user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

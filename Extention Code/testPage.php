@@ -26,7 +26,12 @@ $result = $stmt->get_result();
 // Fetch video data
 $videos = [];
 while ($row = $result->fetch_assoc()) {
-    $videos[] = $row;
+    // Ensure each required field is present
+    if (isset($row['video_id'], $row['channel_name'], $row['video_title'], $row['video_length'], $row['current_time'])) {
+        $videos[] = $row;
+    } else {
+        error_log("Missing data for video: " . json_encode($row)); // Log missing data for debugging
+    }
 }
 
 $stmt->close();

@@ -12,7 +12,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     }).then(() => {
       console.log("Content script injected successfully");
 
-      // After the content script is injected, send the message
+      // After the content script is injected, send the message to get video info
       chrome.tabs.sendMessage(tabId, {
         type: "GET_VIDEO_INFO",
         videoId: videoId
@@ -20,19 +20,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (chrome.runtime.lastError) {
           console.error("Error while sending message:", chrome.runtime.lastError.message);
         } else {
-          // Send video data to your backend to update the record
-          fetch('http://your-backend-url.com/api/updateVideoInfo', {
+          // Send video data to the backend to update the record
+          fetch('http://138.47.152.81/watch360/updateVideoInfo.php', { // Replace with your actual URL
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: JSON.stringify({
-              userId: '1', // Replace with the actual user ID
-              videoId: videoId,
-              videoTitle: response.videoTitle,
-              channelName: response.channelName,
-              videoLength: response.videoLength,
-              currentTime: response.currentTime
+            body: new URLSearchParams({
+              user_id: '1', // Replace with the actual user ID
+              video_id: videoId,
+              title: response.videoTitle,
+              channel: response.channelName,
+              length: response.videoLength,
+              current_time: response.currentTime
             })
           }).then(response => response.json())
             .then(data => {
@@ -51,18 +51,17 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Listener for tab close events
 chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  // Logic to handle when a tab is closed
   console.log(`Tab ${tabId} was closed`);
-  
-  // Optionally, you could send a message to your backend to delete or update video data
-  fetch('http://your-backend-url.com/api/removeVideoInfo', {
+
+  // Send a request to your backend to delete video info when the tab is closed
+  fetch('http://138.47.152.81/watch360/removeVideoInfo.php', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
-    body: JSON.stringify({
-      userId: '1', // Replace with the actual user ID
-      tabId: tabId // You could track the video info per tab if needed
+    body: new URLSearchParams({
+      user_id: '1', // Replace with the actual user ID
+      tab_id: tabId // Optionally track video info per tab
     })
   }).then(response => response.json())
     .then(data => {
@@ -70,27 +69,5 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
     })
     .catch(error => {
       console.error('Error removing video info in backend:', error);
-    });
-});
-
-chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
-  console.log(`Tab ${tabId} was closed`);
-
-  // Send a request to your backend to delete video info when the tab is closed
-  fetch('http://your-server-url/api/removeVideoInfo.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      userId: '1', // Replace with actual user ID
-      tabId: tabId  // Optional, if you are tracking by tab
-    })
-  }).then(response => response.json())
-    .then(data => {
-      console.log('Video info removed in backend:', data);
-    })
-    .catch(error => {
-      console.error('Error removing video info:', error);
     });
 });

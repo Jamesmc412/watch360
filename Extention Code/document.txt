@@ -1,0 +1,13 @@
+This code is for the creation of the extention.
+The extention is needed to connect the users to the website and the database.
+To use the extention, you have to have the files for the extention and then upload the extention to the developer mode in google chrome.
+The extention on works on Google Chrome. 
+If the extention is installed/uploaded it should be able to communicate with the website Youtube.
+When it communicates with Youtube it will display on the extention information:
+    Video Name,
+    Channel Name,
+    The timestamp you are on,
+    The Length of the Video,
+
+This information will also be sent to the SQL server and the server will then display the information on the website
+The displaying and communication of the server is not working yet.

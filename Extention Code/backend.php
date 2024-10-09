@@ -10,8 +10,10 @@ $conn = new mysqli($host, $user, $password, $database);
 
 // Check the connection
 if ($conn->connect_error) {
+    error_log("Connection failed: " . $conn->connect_error);
     die("Connection failed: " . $conn->connect_error);
 }
+
 
 // Get the raw POST data from the request
 $postData = file_get_contents("php://input");

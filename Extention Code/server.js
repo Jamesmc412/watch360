@@ -1,9 +1,12 @@
+// server.js
 const express = require('express');
 const mysql = require('mysql');
 const app = express();
-const port = 80;
+const bodyParser = require('body-parser');
 
-// Create connection to MySQL database
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
@@ -11,53 +14,27 @@ const db = mysql.createConnection({
   database: 'watch360'
 });
 
-db.connect((err) => {
-  if (err) {
-    console.error('Error connecting to the database:', err);
-    return;
-  }
+db.connect(err => {
+  if (err) throw err;
   console.log('Connected to MySQL');
 });
 
-// Middleware to parse JSON requests
-app.use(express.json());
+app.post('/updateVideoInfo', (req, res) => {
+  const { user_id, video_id, title, channel, length, current_time } = req.body;
 
-// Route to handle video info submissions from the extension
-app.post('/api/saveVideoInfo', (req, res) => {
-  const { userId, videoId, channelName, videoTitle, videoLength, currentTime } = req.body;
+  const sql = `INSERT INTO videos (user_id, video_id, title, channel, length, current_time)
+               VALUES (?, ?, ?, ?, ?, ?)
+               ON DUPLICATE KEY UPDATE
+               title = VALUES(title), channel = VALUES(channel), length = VALUES(length), current_time = VALUES(current_time)`;
 
-  const query = `
-    INSERT INTO videos (user_id, video_id, channel_name, video_title, video_length, current_time)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `;
-
-  db.query(query, [userId, videoId, channelName, videoTitle, videoLength, currentTime], (err, result) => {
+  db.query(sql, [user_id, video_id, title, channel, length, current_time], (err, result) => {
     if (err) {
-      console.error('Error inserting video data:', err);
-      res.status(500).send('Error inserting video data');
-      return;
+      return res.json({ success: false, message: 'Failed to update video info' });
     }
-    res.send('Video info saved successfully');
+    res.json({ success: true, message: 'Video info updated' });
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
 });
-
-
-app.get('/api/getVideos/:userId', (req, res) => {
-    const userId = req.params.userId;
-  
-    const query = `SELECT * FROM videos WHERE user_id = ?`;
-  
-    db.query(query, [userId], (err, results) => {
-      if (err) {
-        console.error('Error fetching videos:', err);
-        res.status(500).send('Error fetching videos');
-        return;
-      }
-      res.json(results);
-    });
-  });
-  

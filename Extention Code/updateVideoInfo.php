@@ -1,59 +1,39 @@
 <?php
-// Database connection settings
-$host = 'localhost';             // Database host
-$user = 'root';        // Database username
-$password = '';// Database password
-$database = 'watch360';           // Database name
+// updateVideoInfo.php
+header("Content-Type: application/json");
 
-// Create connection to the MySQL database
-$conn = new mysqli($host, $user, $password, $database);
+// Connect to MySQL database
+$host = 'localhost';
+$db = 'watch360';
+$user = 'root'; // Replace with your DB user
+$pass = '';     // Replace with your DB password
 
-// Check the connection
+$conn = new mysqli($host, $user, $pass, $db);
+
+// Check connection
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(['success' => false, 'message' => 'Database connection failed']));
 }
 
-// Get the raw POST data from the request
-$postData = file_get_contents("php://input");
+// Get the POST data from the extension
+$userId = $_POST['user_id'];
+$videoId = $_POST['video_id'];
+$title = $_POST['title'];
+$channel = $_POST['channel'];
+$length = $_POST['length'];
+$currentTime = $_POST['current_time'];
 
-// Decode the JSON data
-$data = json_decode($postData, true);
-
-// Validate data
-if (!isset($data['userId']) || !isset($data['videoId'])) {
-    echo json_encode(['error' => 'Invalid data']);
-    exit;
-}
-
-// Extract variables from decoded JSON data
-$userId = intval($data['userId']);
-$videoId = $conn->real_escape_string($data['videoId']);
-$videoTitle = $conn->real_escape_string($data['videoTitle']);
-$channelName = $conn->real_escape_string($data['channelName']);
-$videoLength = intval($data['videoLength']);
-$currentTime = intval($data['currentTime']);
-
-// Prepare the SQL statement to insert or update video data
-$sql = "INSERT INTO videos (user_id, video_id, video_title, channel_name, video_length, current_time)
-        VALUES (?, ?, ?, ?, ?, ?)
+// Insert or update the video information
+$sql = "INSERT INTO videos (user_id, video_id, title, channel, length, current_time)
+        VALUES ('$userId', '$videoId', '$title', '$channel', '$length', '$currentTime')
         ON DUPLICATE KEY UPDATE
-        video_title = VALUES(video_title),
-        channel_name = VALUES(channel_name),
-        video_length = VALUES(video_length),
-        current_time = VALUES(current_time)";
+        title = '$title', channel = '$channel', length = '$length', current_time = '$currentTime'";
 
-// Prepare the statement and bind the parameters
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("isssii", $userId, $videoId, $videoTitle, $channelName, $videoLength, $currentTime);
-
-// Execute the statement
-if ($stmt->execute()) {
-    echo json_encode(['status' => 'success', 'message' => 'Video info updated']);
+if ($conn->query($sql) === TRUE) {
+    echo json_encode(['success' => true, 'message' => 'Video info updated']);
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Failed to update video info']);
+    echo json_encode(['success' => false, 'message' => 'Failed to update video info']);
 }
 
-// Close the connection
-$stmt->close();
 $conn->close();
 ?>
