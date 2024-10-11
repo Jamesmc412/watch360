@@ -11,7 +11,7 @@
   ],
   "host_permissions": [
     "https://*.youtube.com/*",
-    "http://138.47.152.81/watch360/backend.php"  
+    "http://138.47.155.181/watch360/backend.php"  
   ],
   "background": {
     "service_worker": "background.js"

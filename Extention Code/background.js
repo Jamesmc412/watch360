@@ -21,7 +21,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
           console.error("Error while sending message:", chrome.runtime.lastError.message);
         } else {
           // Send video data to the backend to update the record
-          fetch('http://138.47.152.81/watch360/updateVideoInfo.php', { // Replace with your actual URL
+          fetch('http://138.47.155.181/watch360/updateVideoInfo.php', { // Replace with your actual URL
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded',
@@ -54,7 +54,7 @@ chrome.tabs.onRemoved.addListener((tabId, removeInfo) => {
   console.log(`Tab ${tabId} was closed`);
 
   // Send a request to your backend to delete video info when the tab is closed
-  fetch('http://138.47.152.81/watch360/removeVideoInfo.php', {
+  fetch('http://138.47.155.181/watch360/removeVideoInfo.php', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
