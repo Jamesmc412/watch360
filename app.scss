@@ -1,0 +1,126 @@
+@import url("https://fonts.cdnfonts.com/css/gotham-rounded");
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Gotham Rounded", sans-serif;
+}
+
+.settings-panel {
+  --panel-bg: #0e7a0d;
+  --heading-color: #ffffff;
+  --settings-info-color: #ffffff;
+
+  --checkbox-bg-unchecked: #d9d9d9;
+  --checkbox-bg-checked: #000000;
+  --checkbox-switch-color: var(--panel-bg);
+}
+
+.settings-panel.dark {
+  --panel-bg: #000000;
+  --heading-color: #2ca243;
+  --settings-info-color: #2ca243;
+
+  --checkbox-bg-unchecked: #677176;
+  --checkbox-bg-checked: var(--heading-color);
+  --checkbox-switch-color: var(--panel-bg);
+
+}
+
+body{
+  background-color: var(--primary-bg);
+  background-image: url(../images/smallxbox.png);
+  background-repeat: no-repeat;
+  background-position: bottom left;
+  background-size: 250px;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center
+}
+
+.settings-panel{
+  background-color: var(--panel-bg);
+  padding: 2rem;
+  width: 80%;
+  max-width: 550px;
+  border-radius: 1rem;
+  box-shadow: 0 12px 12px rgba(black, 0.15);
+  transition: background-color .6s ease;
+
+  header{
+    color: var(--heading-color);
+    margin-bottom: 2rem;
+    transition: color .3s ease;
+  }
+
+  .setting {
+    margin: 2rem auto;
+    color: var(--settings-info-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: color .3s ease;
+    label{
+      width: 80%;
+      span {
+        display: block;
+        &:last-of-type {
+          font-weight: 300;
+        }
+      }
+    }
+    input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 45px;
+      height: 25px;
+      border-radius: 25px;
+      background-color: var(--checkbox-bg-unchecked);
+      position: relative;
+      transition: background-color .3s ease;
+      &::after{
+        content:'';
+        position: absolute;
+        top: 50%;
+        left: 27%;
+        transform: translate(-50%,-50%);
+        height: 22px;
+        width: 22px;
+        border-radius: 50%;
+        background-color: var(--checkbox-switch-color);
+        transition: left .3s ease;
+      }
+      &:checked {
+        background-color: var(--checkbox-bg-checked);
+        &::after {
+          left: 70%;
+        }
+      }
+    }
+    input[type="text"]{
+      appearance: none;
+      -webkit-appearance: none;
+      width: 270px;
+      height: 30px;
+      border-radius: 25px;
+      text-indent: 5px;
+      background-color: var(--settings-info-color);
+      position: relative;
+    }
+    input[type="submit"]{
+      appearance:none;
+      -webkit-appearance: none;
+      justify-content: space-evenly;
+      align-items: center;
+      width: 150px;
+      height: 35px;
+      border-color: var(--heading-color);
+      border-radius: 25px;
+      color: #ffffff;
+      background-color: var(--panel-bg);
+    }
+  }
+}
+
