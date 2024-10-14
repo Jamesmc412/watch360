@@ -6,14 +6,13 @@ document.addEventListener("DOMContentLoaded", () => {
     bookmarksElement.innerHTML = ""; // Clear previous content
 
     if (videoInfo) {
-      const { title, channelName, videoLength, currentTime } = videoInfo;
+      const { title, videoLength, currentTime } = videoInfo;
 
       // Create and display video information elements
       const videoInfoElement = document.createElement("div");
       videoInfoElement.innerHTML = `
         <div class="video-info">
           <strong>Title:</strong> ${title}<br>
-          <strong>Channel:</strong> ${channelName}<br>
           <strong>Video Length:</strong> ${videoLength}<br>
           <strong>Current Time:</strong> ${currentTime}
         </div>
