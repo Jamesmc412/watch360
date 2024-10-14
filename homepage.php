@@ -1,7 +1,42 @@
 <?php
-// This PHP file renders a Friends page styled like the Xbox app
+// Include config.php for database connection and session.php to start the session
+require_once "config.php"; // Ensure this file sets up the $db variable
+require_once "session.php"; // Ensure this file calls session_start()
 
-// Include your back-end logic here, e.g., fetching a list of friends from a database.
+// Check if the session is started and if the user is logged in
+if (!isset($_SESSION['userid'])) {
+    header("Location: login.php");
+    exit;
+}
+
+$error = ''; // Variable to store errors
+// Fetch friends of the logged-in user
+$loggedInUserId = $_SESSION['userid'];
+
+// Prepare the SQL query to fetch friends
+if ($stmt = $db->prepare("SELECT u.id, u.name, u.username, 
+        IFNULL(f.status, 'not_friends') AS friendship_status 
+        FROM users u
+        LEFT JOIN friendships f 
+        ON (u.id = f.friend_id AND f.user_id = ?) 
+        OR (u.id = f.user_id AND f.friend_id = ?)
+        WHERE u.id != ?")) {
+
+    // Bind the parameters
+    $stmt->bind_param('iii', $loggedInUserId, $loggedInUserId, $loggedInUserId);
+
+    // Execute the query
+    $stmt->execute();
+
+    // Get the result
+    $result = $stmt->get_result();
+    $friends = $result->fetch_all(MYSQLI_ASSOC);
+
+    // Close the statement
+    $stmt->close();
+} else {
+    $error = "Database error: Unable to prepare query.";
+}
 ?>
 
 <!DOCTYPE html>
@@ -142,27 +177,35 @@
     </div>
 
     <div class="main-content">
-        <h2>Your Friends</h2>
-        <div class="friend-list">
-            <!-- Example of friend card -->
-            <div class="friend-card">
-                <h2>Friend 1</h2>
-                <p>Online</p>
-                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
-            </div>
-            <div class="friend-card">
-                <h2>Friend 2</h2>
-                <p>Offline</p>
-                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
-            </div>
-            <div class="friend-card">
-                <h2>Friend 3</h2>
-                <p>Online</p>
-                <p class="currently-watching">Currently watching: ?</p> <!-- Add this line -->
-            </div>
-            <!-- Add more friends here -->
-        </div>
+    <h2>Your Friends</h2>
+    
+    <div class="friend-list">
+        <?php if (!empty($friends)): ?>
+            <?php foreach ($friends as $friend): ?>
+                <div class="friend-card">
+                    <h2><?php echo htmlspecialchars($friend['name']); ?></h2>
+                    <p>
+                        <?php 
+                        // Display friendship status
+                        if ($friend['friendship_status'] == 'accepted') {
+                            echo 'Online';  // Placeholder, replace with real online status if available
+                        } elseif ($friend['friendship_status'] == 'pending') {
+                            echo 'Friend Request Pending';
+                        } else {
+                            echo 'Not Friends';
+                        }
+                        ?>
+                    </p>
+                    <p class="currently-watching">Currently watching: ?</p> <!-- Add dynamic watching info if available -->
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <p>You have no friends to display.</p>
+        <?php endif; ?>
     </div>
+</div>
+
 
 </body>
 </html>
+
