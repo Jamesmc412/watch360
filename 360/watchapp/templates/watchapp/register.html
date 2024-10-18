@@ -1,0 +1,91 @@
+{% load static %}
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: white;
+            color: black;
+            position: relative;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 100px;
+        }
+
+        a {
+            color: green;
+        }
+
+        .btn-primary {
+            background-color: green;
+            border-color: green;
+        }
+
+        .btn-primary:hover {
+            background-color: darkgreen;
+            border-color: darkgreen;
+        }
+
+        .bottom-image {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Register</h2>
+                <p>Please fill in this form to create an account.</p>
+
+                {% if error %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirm_password">Confirm Password</label>
+                        <input type="password" name="confirm_password" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btn btn-primary" value="Register">
+                    </div>
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <img src="{% static 'smallxbox.png' %}" alt="Small Xbox" class="bottom-image">
+</body>
+</html>
