@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch360</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1b1b1b;
+        }
+        .header {
+            background-color: #107c10;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; }
+        .header-buttons { display: flex; gap: 10px; }
+        .header-buttons button {
+            background-color: transparent;
+            border: none;
+            color: black;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: #242424;
+            height: 100vh;
+            position: fixed;
+            top: 79px;
+            left: 0;
+            padding: 10px;
+        }
+        .sidebar h3 { color: white; }
+        .sidebar form input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .sidebar form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #107c10;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .search-results {
+            display: none;
+            background: #fff;
+            border: 1px solid #ccc;
+            max-height: 150px;
+            overflow-y: auto;
+            position: absolute;
+            z-index: 1;
+        }
+        .search-results div {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .search-results div:hover {
+            background-color: #f0f0f0;
+        }
+        .main-content {
+            margin-left: 220px;
+            padding: 20px;
+        }
+        .friend-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .friend-card {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .friend-card h2 { font-size: 18px; margin-bottom: 5px; }
+        .friend-card p { font-size: 14px; color: #bbb; }
+        .currently-watching { color: #ccc; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Watch360</h1>
+        <div class="header-buttons">
+            <button onclick="location.href='{% url 'settings' %}'">Settings</button>
+            <button onclick="location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h3>Search People</h3>
+        <form id="search-form" onsubmit="return false;">
+            <input type="text" id="search-input" placeholder="Search..." required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="search-results" class="search-results">
+            <!-- Autofill results will be injected here -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h2>Your Friends</h2>
+        <div class="friend-list">
+            {% for friend in friends %}
+                <div class="friend-card">
+                    <h2>{{ friend.name }}</h2>
+                    <p>{{ friend.status }}</p>
+                    <p class="currently-watching">Currently watching: {{ friend.watching }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('search-input').addEventListener('input', function() {
+            const query = this.value;
+            const resultsDiv = document.getElementById('search-results');
+
+            if (query.length < 1) {
+                resultsDiv.style.display = 'none';
+                return;
+            }
+
+            fetch(`/search/?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(user => {
+                            const div = document.createElement('div');
+                            div.innerHTML = `<strong>${user.name}</strong> <p>@${user.username}</p> 
+                                             <button class="friend-button" data-username="${user.username}">Friend</button>`;
+                            div.querySelector('.friend-button').addEventListener('click', function() {
+                                // Add friend logic
+                                addFriend(user.username);
+                            });
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.style.display = 'block';
+                    } else {
+                        resultsDiv.style.display = 'none';
+                    }
+                })
+                .catch(error => console.error('Error fetching search results:', error));
+        });
+
+        function addFriend(username) {
+            fetch(`/add-friend/${username}/`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Friend request sent to ' + username);
+                    } else {
+                        alert('Error sending friend request');
+                    }
+                })
+                .catch(error => console.error('Error sending friend request:', error));
+        }
+    </script>
+
+</body>
+</html>
