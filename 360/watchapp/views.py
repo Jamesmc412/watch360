@@ -7,11 +7,76 @@ from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from bs4 import BeautifulSoup
+from django.http import JsonResponse
 import requests
+import json
+from .models import YouTubeData
+from django.views.decorators.csrf import csrf_exempt
 
-def home(request):
-    """Render the home page with the search bar."""
-    return render(request, 'watchapp/home.html')
+
+
+def get_video_title(video_url):
+    """Fetch the video title from YouTube API."""
+    try:
+        # Extract the video ID from the URL
+        video_id = video_url.split('v=')[1].split('&')[0] if 'v=' in video_url else None
+        if not video_id:
+            return "Invalid YouTube URL"
+
+        # Define your YouTube Data API key and endpoint
+        api_key = 'AIzaSyB0ck1zWAO-20vOaNRdgYu7-yTNCS0jtZE'  # Replace with your API key
+        endpoint = f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={api_key}'
+
+        # Make the request to the YouTube Data API
+        response = requests.get(endpoint)
+        response.raise_for_status()
+
+        # Parse the response and extract the video title
+        data = response.json()
+        if data['items']:
+            return data['items'][0]['snippet']['title']
+        return "Video not found"
+
+    except Exception as e:
+        print(f"Error fetching video title: {e}")
+        return "Could not retrieve title"
+
+@login_required
+def search_video(request):
+    if request.method == "POST":
+        try:
+            # Parse the JSON request body
+            data = json.loads(request.body)
+            video_url = data.get("youtube_url")
+
+            if not video_url:
+                return JsonResponse({'error': 'YouTube URL is required'}, status=400)
+
+            # Get the video title using the function above
+            video_title = get_video_title(video_url)
+
+            # Save the video for the currently logged-in user
+            YouTubeData.objects.create(user=request.user, video_url=video_url, video_title=video_title)
+
+            # Return the video title in the response
+            return JsonResponse({'title': video_title})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@login_required
+def home_view(request):
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
+
+    context = {
+        'user_videos': user_videos,
+    }
+    return render(request, 'watchapp/homepage.html', context)
+
 
 def result(request):
     """Scrape the YouTube page for the video title."""
@@ -78,14 +143,9 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-def homepage_view(request):
-    # Sample data to mimic friend list
-    friends = [
-        {"name": "Friend 1", "status": "Online", "watching": "?"},
-        {"name": "Friend 2", "status": "Offline", "watching": "?"},
-        {"name": "Friend 3", "status": "Online", "watching": "?"}
-    ]
-    return render(request, 'watchapp/homepage.html', {"friends": friends})
+def homepage(request):
+    videos = YouTubeData.objects.all().order_by('-timestamp')  # Get all videos sorted by latest
+    return render(request, 'watchapp/homepage.html', {'videos': videos})
 
 def logout_view(request):
     # Clear the session data

@@ -18,8 +18,15 @@
             justify-content: space-between;
             align-items: center;
         }
-        .header h1 { font-size: 24px; }
-        .header-buttons { display: flex; gap: 10px; }
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: white;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
         .header-buttons button {
             background-color: transparent;
             border: none;
@@ -38,12 +45,15 @@
             left: 0;
             padding: 10px;
         }
-        .sidebar h3 { color: white; }
+        .sidebar h3 {
+            color: white;
+        }
         .sidebar form input {
             width: 90%;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
+            border: 1px solid #ccc;
         }
         .sidebar form button {
             width: 100%;
@@ -69,13 +79,41 @@
             border-radius: 10px;
             text-align: center;
         }
-        .friend-card h2 { font-size: 18px; margin-bottom: 5px; }
-        .friend-card p { font-size: 14px; color: #bbb; }
-        .currently-watching { color: #ccc; margin-top: 10px; }
+        .friend-card h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .friend-card p {
+            font-size: 14px;
+            color: #bbb;
+        }
+        .currently-watching {
+            color: #ccc;
+            margin-top: 10px;
+        }
+        .video-list {
+            margin-top: 40px;
+        }
+        .video-card {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .video-card h3 {
+            margin: 0;
+            color: #107c10;
+        }
+        .video-card a {
+            color: #107c10;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
 
+    <!-- Header Section -->
     <div class="header">
         <h1>Watch360</h1>
         <div class="header-buttons">
@@ -84,25 +122,65 @@
         </div>
     </div>
 
+    <!-- Sidebar with YouTube Search -->
     <div class="sidebar">
-        <h3>Search People</h3>
-       
-
-        
+        <h3>Search YouTube Video</h3>
+        <form id="youtube-search-form">
+            <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+            <button type="submit">Search</button>
+        </form>
+        <p id="video-title" style="margin-top: 10px; color: white;"></p>
     </div>
 
+
+    <!-- Main Content Section -->
     <div class="main-content">
-        <h2>Your Friends</h2>
+        <h2>Your Recently Added Videos</h2>
         <div class="friend-list">
-            {% for friend in friends %}
-                <div class="friend-card">
-                    <h2>{{ friend.name }}</h2>
-                    <p>{{ friend.status }}</p>
-                    <p class="currently-watching">Currently watching: {{ friend.watching }}</p>
-                </div>
-            {% endfor %}
+            {% if user_videos %}
+                {% for video in user_videos %}
+                    <div class="friend-card">
+                        <h2>{{ video.video_title }}</h2>
+                        <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
+                        <p class="currently-watching">Added on: {{ video.added_at }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>You haven't added any videos yet.</p>
+            {% endif %}
         </div>
     </div>
+    
+    <!-- AJAX Script -->
+    <script>
+        document.getElementById('youtube-search-form').addEventListener('submit', async function(event) {
+            event.preventDefault();  // Prevent form from refreshing the page
 
+            const url = document.getElementById('youtube-url').value;
+            const csrfToken = '{{ csrf_token }}';  // CSRF token for security
+
+            try {
+                const response = await fetch("{% url 'search_video' %}", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({ youtube_url: url })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('video-title').innerText =
+                        data.title ? `Video Title: ${data.title}` : 'Title not found.';
+                } else {
+                    document.getElementById('video-title').innerText = 'Error fetching video title.';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('video-title').innerText = 'An error occurred.';
+            }
+        });
+    </script>
 </body>
 </html>

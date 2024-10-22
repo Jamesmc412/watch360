@@ -4,8 +4,8 @@ from . import views
 urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
-    path('', views.home, name='home'),  # Ensure only one homepage route
+    path('', views.home_view, name='homepage'),  # Matches 'homepage'
     path('settings/', views.settings_view, name='settings'),
     path('logout/', views.logout_view, name='logout'),
-    path('result/', views.result, name='result'),
+    path('search_video/', views.search_video, name='search_video'),
 ]
