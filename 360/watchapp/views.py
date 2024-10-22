@@ -6,7 +6,32 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from bs4 import BeautifulSoup
+import requests
 
+def home(request):
+    """Render the home page with the search bar."""
+    return render(request, 'watchapp/home.html')
+
+def result(request):
+    """Scrape the YouTube page for the video title."""
+    if request.method == 'POST':
+        youtube_url = request.POST.get('youtube_url')
+
+        # Make a request to the YouTube page
+        response = requests.get(youtube_url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Extract the video title
+            title = soup.find('meta', property='og:title')
+            video_title = title['content'] if title else 'Title not found'
+
+            # Pass the title to the template
+            return render(request, 'watchapp/result.html', {'video_title': video_title})
+        else:
+            return render(request, 'watchapp/result.html', {'error': 'Could not retrieve the page.'})
+    return render(request, 'watchapp/home.html')
 
 def login_view(request):
     error = None
