@@ -55,13 +55,13 @@ def register_view(request):
     return render(request, 'watchapp/register.html', {'error': error})
 
 def homepage_view(request):
-    # Sample data to mimic friend list
-    friends = [
-        {"name": "Friend 1", "status": "Online", "watching": "?"},
-        {"name": "Friend 2", "status": "Offline", "watching": "?"},
-        {"name": "Friend 3", "status": "Online", "watching": "?"}
-    ]
-    return render(request, 'watchapp/homepage.html', {"friends": friends})
+# Get all friends of the logged-in user
+    friends = Friend.objects.friends(request.user)
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username} for friend in friends]
+
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
 
 def logout_view(request):
     # Clear the session data
