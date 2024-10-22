@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
@@ -6,7 +6,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
-
+from friendship.models import Friend, FriendshipRequest
+from django.http import HttpResponse
 
 def login_view(request):
     error = None
@@ -90,3 +91,67 @@ def settings_view(request):
         return redirect('login')
 
     return render(request, 'watchapp/settings.html', {'user': user})
+
+# View to display all users
+@login_required
+def user_list(request):
+    users = User.objects.exclude(id=request.user.id)
+    friends = Friend.objects.friends(request.user)
+    friend_requests_sent = Friend.objects.sent_requests(user=request.user)
+    friend_requests_received = Friend.objects.unrejected_requests(user=request.user)
+    
+    context = {
+        'users': users,
+        'friends': friends,
+        'friend_requests_sent': friend_requests_sent,
+        'friend_requests_received': friend_requests_received,
+    }
+    return render(request, 'watchapp/user_list.html', context)
+
+# View to send a friend request
+@login_required
+def send_friend_request(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    if Friend.objects.are_friends(request.user, user):
+        return HttpResponse("You are already friends.")
+    
+    # Send the request
+    Friend.objects.add_friend(
+        request.user,           # The sender
+        user,                   # The recipient
+    )
+    return redirect('user_list')
+
+# View to accept a friend request
+@login_required
+def accept_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    
+    if friend_request.to_user != request.user:
+        return HttpResponse("You don't have permission to accept this request.")
+    
+    # Accept the request
+    friend_request.accept()
+    return redirect('user_list')
+
+# View to reject a friend request
+@login_required
+def reject_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    
+    if friend_request.to_user != request.user:
+        return HttpResponse("You don't have permission to reject this request.")
+    
+    # Reject the request
+    friend_request.reject()
+    return redirect('user_list')
+
+# View to unfriend someone
+@login_required
+def unfriend(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    # Remove the friendship
+    Friend.objects.remove_friend(request.user, user)
+    return redirect('user_list')
