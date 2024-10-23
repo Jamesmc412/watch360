@@ -12,6 +12,9 @@ import requests
 import json
 from .models import YouTubeData
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import timedelta
+from django.shortcuts import get_object_or_404
 
 
 
@@ -77,6 +80,25 @@ def home_view(request):
     }
     return render(request, 'watchapp/homepage.html', context)
 
+@login_required
+def delete_video(request, video_id):
+    # Fetch the video object or return a 404 if it doesn't exist
+    video = get_object_or_404(YouTubeData, id=video_id)
+    
+    # Check if the logged-in user is the owner of the video
+    if video.user == request.user:
+        video.delete()  # Delete the video from the database
+        return redirect('homepage')  # Redirect to the homepage after deletion
+    else:
+        return JsonResponse({'error': 'You do not have permission to delete this video.'}, status=403)
+    
+def convert_duration_to_seconds(duration):
+    """Convert ISO 8601 duration format to seconds."""
+    import isodate  # Ensure you have the isodate library installed
+    try:
+        return int(isodate.parse_duration(duration).total_seconds())
+    except Exception:
+        return 0  # Return 0 if there's an error
 
 def result(request):
     """Scrape the YouTube page for the video title."""
