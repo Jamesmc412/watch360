@@ -18,8 +18,44 @@
             justify-content: space-between;
             align-items: center;
         }
+<<<<<<< Updated upstream
         .header h1 { font-size: 24px; }
         .header-buttons { display: flex; gap: 10px; }
+=======
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: white;
+        }
+        .header h2 {
+            margin: auto;
+            font-size: 24px;
+            color: white;
+        }
+        .header span.dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .gray {
+            background-color: #bbbbbb;
+        }
+        .green {
+            background-color: #2ca243;
+        }
+        .header span  {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+            background-color: #2ca243;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+>>>>>>> Stashed changes
         .header-buttons button {
             background-color: transparent;
             border: none;
@@ -78,6 +114,9 @@
 
     <div class="header">
         <h1>Watch360</h1>
+        <h2>Hello {{user.username}} &nbsp; 
+            <span class="dot {% if user.is_Online %}green{% else %}gray{% endif %}"></span>
+        </h2>
         <div class="header-buttons">
             <button onclick="location.href='{% url 'settings' %}'">Settings</button>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
@@ -104,5 +143,41 @@
         </div>
     </div>
 
+<<<<<<< Updated upstream
+=======
+    
+    <!-- AJAX Script -->
+    <script>
+        document.getElementById('youtube-search-form').addEventListener('submit', async function(event) {
+            event.preventDefault();  // Prevent form from refreshing the page
+
+            const url = document.getElementById('youtube-url').value;
+            const csrfToken = '{{ csrf_token }}';  // CSRF token for security
+
+            try {
+                const response = await fetch("{% url 'search_video' %}", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify({ youtube_url: url })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('video-title').innerText =
+                        data.title ? `Video Title: ${data.title}` : 'Title not found.';
+                } else {
+                    document.getElementById('video-title').innerText = 'Error fetching video title.';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('video-title').innerText = 'An error occurred.';
+            }
+        });
+    </script>
+    <script src="{% static 'app.js' %}"></script>
+>>>>>>> Stashed changes
 </body>
 </html>
