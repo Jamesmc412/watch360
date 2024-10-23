@@ -9,10 +9,6 @@ from django.contrib.auth import update_session_auth_hash
 from bs4 import BeautifulSoup
 import requests
 
-def home(request):
-    """Render the home page with the search bar."""
-    return render(request, 'watchapp/home.html')
-
 def result(request):
     """Scrape the YouTube page for the video title."""
     if request.method == 'POST':
