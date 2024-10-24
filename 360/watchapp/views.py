@@ -7,7 +7,85 @@ from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from bs4 import BeautifulSoup
+from django.http import JsonResponse
 import requests
+import json
+from .models import YouTubeData
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import timedelta
+from django.shortcuts import get_object_or_404
+
+def get_video_title(video_url):
+    """Fetch the video title from YouTube API."""
+    try:
+        # Extract the video ID from the URL
+        video_id = video_url.split('v=')[1].split('&')[0] if 'v=' in video_url else None
+        if not video_id:
+            return "Invalid YouTube URL"
+
+        # Define your YouTube Data API key and endpoint
+        api_key = 'AIzaSyB0ck1zWAO-20vOaNRdgYu7-yTNCS0jtZE'  # Replace with your API key
+        endpoint = f'https://www.googleapis.com/youtube/v3/videos?part=snippet&id={video_id}&key={api_key}'
+
+        # Make the request to the YouTube Data API
+        response = requests.get(endpoint)
+        response.raise_for_status()
+
+        # Parse the response and extract the video title
+        data = response.json()
+        if data['items']:
+            return data['items'][0]['snippet']['title']
+        return "Video not found"
+
+    except Exception as e:
+        print(f"Error fetching video title: {e}")
+        return "Could not retrieve title"
+    
+@login_required
+def search_video(request):
+    if request.method == "POST":
+        try:
+            # Parse the JSON request body
+            data = json.loads(request.body)
+            video_url = data.get("youtube_url")
+
+            if not video_url:
+                return JsonResponse({'error': 'YouTube URL is required'}, status=400)
+
+            # Get the video title using the function above
+            video_title = get_video_title(video_url)
+
+            # Save the video for the currently logged-in user
+            YouTubeData.objects.create(user=request.user, video_url=video_url, video_title=video_title)
+
+            # Return the video title in the response
+            return JsonResponse({'title': video_title})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@login_required
+def delete_video(request, video_id):
+    # Fetch the video object or return a 404 if it doesn't exist
+    video = get_object_or_404(YouTubeData, id=video_id)
+    
+    # Check if the logged-in user is the owner of the video
+    if video.user == request.user:
+        video.delete()  # Delete the video from the database
+        return redirect('homepage')  # Redirect to the homepage after deletion
+    else:
+        return JsonResponse({'error': 'You do not have permission to delete this video.'}, status=403)
+    
+def convert_duration_to_seconds(duration):
+    """Convert ISO 8601 duration format to seconds."""
+    import isodate  # Ensure you have the isodate library installed
+    try:
+        return int(isodate.parse_duration(duration).total_seconds())
+    except Exception:
+        return 0  # Return 0 if there's an error
 
 def result(request):
     """Scrape the YouTube page for the video title."""

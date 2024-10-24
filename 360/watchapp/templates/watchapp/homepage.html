@@ -30,7 +30,7 @@
             font-size: 24px;
             color: white;
         }
-        .header span.dot {
+        .header dot {
             width: 13px;
             height: 13px;
             border-radius: 50%;
@@ -136,7 +136,7 @@
     <div class="header">
         <h1>Watch360</h1>
         <h2>Hello {{user.username}} &nbsp; 
-            <span class="dot {% if user.is_Online %}green{% else %}gray{% endif %}"></span>
+            <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
             <button onclick="location.href='{% url 'settings' %}'">Settings</button>
@@ -185,7 +185,7 @@
             const csrfToken = '{{ csrf_token }}';  // CSRF token for security
 
             try {
-                const response = await fetch("{% url 'search_video' %}", {
+                const response = await fetch({% url 'search_video' %}, {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json',
@@ -207,6 +207,18 @@
             }
         });
     </script>    
-    <script src="{% static 'app.js' %}"></script>
+    <script>
+        const dotColor = document.getElementById('onlineVisDot');
+
+        const isOnline = localstorage.getItem('isOnline') === true;
+        
+        if (isOnline) {
+            dotColor.classList.add('green')
+        }
+        else {
+            dotColor.classList.add('gray')
+        }
+
+    </script>
 </body>
 </html>
