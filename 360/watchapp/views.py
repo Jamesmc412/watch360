@@ -7,6 +7,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 
+def chat_view(request):
+    return render(request, 'chat.html')
+
 
 def login_view(request):
     error = None

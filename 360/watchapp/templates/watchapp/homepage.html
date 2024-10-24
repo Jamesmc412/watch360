@@ -29,6 +29,13 @@
             display: flex;
             align-items: center;
         }
+        .header-buttons button:hover {
+            color: white;
+        }
+        .header-buttons button:active {
+            color: white;
+        }
+
         .sidebar {
             width: 200px;
             background-color: #242424;
@@ -54,6 +61,15 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .sidebar form button:hover {
+            background-color: #107c10;
+            color: black;
+        }
+        .sidebar form button:active {
+            background-color: #0b4e0b; 
+            color: white;
+        }
+
         .main-content {
             margin-left: 220px;
             padding: 20px;
@@ -68,10 +84,131 @@
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            cursor: pointer;
         }
-        .friend-card h2 { font-size: 18px; margin-bottom: 5px; }
-        .friend-card p { font-size: 14px; color: #bbb; }
-        .currently-watching { color: #ccc; margin-top: 10px; }
+        .friend-card:hover {
+            background-color: #292929;
+        }
+        .friend-card:active {
+            background-color: #404040;
+        }
+        .friend-card h2 { 
+            font-size: 18px; 
+            color: white; 
+            margin-bottom: 5px; 
+        }
+        .friend-card p { 
+            font-size: 14px; 
+            color: #bbb; 
+        }
+        .currently-watching { 
+            color: #ccc; 
+            margin-top: 10px; 
+        }
+
+        /* Chat widget styling */
+        .chat-widget {
+            position: fixed;
+            right: -400px;
+            bottom: 10px;
+            width: 300px;
+            height: 400px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+        }
+        .chat-header {
+            background-color: #107c10;
+            padding: 10px;
+            color: white;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            display: flex;              
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .chat-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            margin-right: 5px;
+        }
+
+        .chat-close:hover {
+            color: black; 
+        }
+        .chat-close:active {
+            color: white; 
+        }
+
+        .chat-body {
+            padding: 10px;
+            overflow-y: auto;
+            height: calc(100% - 100px);
+        }
+        .chat-input {
+            display: flex;
+            padding: 0px;
+            background-color: white;
+            border-radius: 10px;
+        }
+        .chat-input textarea {
+            width: 85%;
+            height: 30px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            resize: none;
+        }
+        .chat-send-button {
+            width: 15%;
+            background-color: #107c10;
+            color: white;
+            border: white;
+            border-radius: 5px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .chat-send-button:hover {
+            background-color: #107c10; 
+            color: black;
+        }
+        .chat-send-button:active {
+            background-color: #0b4e0b; 
+            color: white;
+        }
+
+        /* Chat bubbles */
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .chat-bubble.sender {
+            background-color: #107c10;
+            color: white;
+            align-self: flex-end;
+            border-radius: 10px 10px 0 10px;
+        }
+        .chat-bubble.receiver {
+            background-color: #e0e0e0;
+            color: #000;
+            align-self: flex-start;
+            border-radius: 10px 10px 10px 0;
+        }
+        .chat-message-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
     </style>
 </head>
 <body>
@@ -86,16 +223,17 @@
 
     <div class="sidebar">
         <h3>Search People</h3>
-       
-
-        
+        <form>
+            <input type="text" name="friend_name" placeholder="Search by username" required>
+            <button type="submit">Search</button>
+        </form>
     </div>
 
     <div class="main-content">
         <h2>Your Friends</h2>
         <div class="friend-list">
             {% for friend in friends %}
-                <div class="friend-card">
+                <div class="friend-card" onclick="openChat('{{ friend.name }}')">
                     <h2>{{ friend.name }}</h2>
                     <p>{{ friend.status }}</p>
                     <p class="currently-watching">Currently watching: {{ friend.watching }}</p>
@@ -103,6 +241,64 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Existing HTML structure remains the same -->
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <span>Chat with <span id="chat-friend-name">Friend</span></span>
+            <button class="chat-close" onclick="closeChat()">X</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Chat messages will remain here -->
+        </div>
+        <div class="chat-input">
+            <textarea id="chat-input-message" placeholder="Type your message..."></textarea>
+            <button class="chat-send-button" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let chatHistory = {};
+
+        function openChat(friendName) {
+            document.getElementById('chat-friend-name').textContent = friendName;
+            document.getElementById('chat-widget').style.right = '0px'; // Slide chat widget in
+            document.getElementById('chat-input-message').value = ''; // Clear input field
+            if (!chatHistory[friendName]) {
+                chatHistory[friendName] = []; // Initialize chat history for new friend
+            }
+            displayChatHistory(friendName);
+        }
+
+        function closeChat() {
+            document.getElementById('chat-widget').style.right = '-400px'; // Slide chat widget out
+            // Chat history remains visible for reopening
+        }
+
+        function displayChatHistory(friendName) {
+            const chatBody = document.getElementById('chat-body');
+            chatBody.innerHTML = ''; // Clear the chat body to re-render
+
+            chatHistory[friendName].forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
+                messageDiv.textContent = msg.text;
+                chatBody.appendChild(messageDiv);
+            });
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('chat-input-message');
+            const messageText = messageInput.value;
+            const friendName = document.getElementById('chat-friend-name').textContent;
+
+            if (messageText) {
+                chatHistory[friendName].push({ sender: 'me', text: messageText }); // Save the message
+                displayChatHistory(friendName); // Refresh chat display
+                messageInput.value = ''; // Clear input
+            }
+        }
+    </script>
 
 </body>
 </html>
