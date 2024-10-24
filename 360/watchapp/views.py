@@ -31,7 +31,8 @@ def register_view(request):
     error = None
 
     if request.method == 'POST':
-        fullname = request.POST['name']
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST['username']
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
@@ -44,11 +45,9 @@ def register_view(request):
             error = "Passwords do not match."
         else:
             # Create a new user
-            user = User.objects.create(
-                username=username,
-                password=make_password(password),
-                first_name=fullname
-            )
+            user = User.objects.create_user(
+                username=username, password=password, 
+                first_name=first_name, last_name=last_name)
             messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
