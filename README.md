@@ -6,3 +6,5 @@ Run the command "python manage.py runserver" to start the server.
 Admin page: http://localhost:8000/admin
 Login page: http://localhost:8000/login
 Register page: http://localhost:8000/register
+
+***Chat is on homepage when you click on a friend card***
