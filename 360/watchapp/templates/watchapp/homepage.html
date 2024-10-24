@@ -102,9 +102,33 @@
             border-radius: 10px;
             text-align: center;
         }
-        .friend-card h2 { font-size: 18px; margin-bottom: 5px; }
-        .friend-card p { font-size: 14px; color: #bbb; }
-        .currently-watching { color: #ccc; margin-top: 10px; }
+        .friend-card h2 { 
+            font-size: 18px; margin-bottom: 5px; 
+        }
+        .friend-card p { 
+            font-size: 14px; color: #bbb; 
+        }
+        .currently-watching { 
+            color: #ccc; margin-top: 10px; 
+        }
+        .video-list {
+            margin-top: 40px;
+        }
+        .video-card {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .video-card h3 {
+            margin: 0;
+            color: #107c10;
+        }
+        .video-card a {
+            color: #107c10;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -121,22 +145,33 @@
     </div>
 
     <div class="sidebar">
-        <h3>Search People</h3>
-       
-
-        
+        <h3>Search YouTube Video</h3>
+        <form id="youtube-search-form">
+            <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+            <button type="submit">Search</button>
+        </form>
+        <p id="video-title" style="margin-top: 10px; color: white;"></p>
     </div>
 
     <div class="main-content">
-        <h2>Your Friends</h2>
+        <h2>Your Recently Added Videos</h2>
         <div class="friend-list">
-            {% for friend in friends %}
-                <div class="friend-card">
-                    <h2>{{ friend.name }}</h2>
-                    <p>{{ friend.status }}</p>
-                    <p class="currently-watching">Currently watching: {{ friend.watching }}</p>
-                </div>
-            {% endfor %}
+            {% if user_videos %}
+                {% for video in user_videos %}
+                    <div class="friend-card">
+                        <h2>{{ video.video_title }}</h2>
+                        <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
+                        <p class="currently-watching">Added on: {{ video.added_at }}</p>
+                        <p>
+                            <a href="{% url 'delete_video' video.id %}" 
+                            onclick="return confirm('Are you sure you want to delete this video?');" 
+                            style="color: red; text-decoration: none;">Delete</a>
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>You haven't added any videos yet.</p>
+            {% endif %}
         </div>
     </div>
 
@@ -171,7 +206,7 @@
                 document.getElementById('video-title').innerText = 'An error occurred.';
             }
         });
-    </script>
+    </script>    
     <script src="{% static 'app.js' %}"></script>
 </body>
 </html>
