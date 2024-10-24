@@ -91,22 +91,6 @@ def settings_view(request):
 
     return render(request, 'watchapp/settings.html', {'user': user})
 
-# View to display all users
-@login_required
-def user_list(request):
-    users = User.objects.exclude(id=request.user.id)
-    friends = Friend.objects.friends(request.user)
-    friend_requests_sent = Friend.objects.sent_requests(user=request.user)
-    friend_requests_received = Friend.objects.unrejected_requests(user=request.user)
-    
-    context = {
-        'users': users,
-        'friends': friends,
-        'friend_requests_sent': friend_requests_sent,
-        'friend_requests_received': friend_requests_received,
-    }
-    return render(request, 'watchapp/user_list.html', context)
-
 # View to send a friend request
 @login_required
 def send_friend_request(request, user_id):
