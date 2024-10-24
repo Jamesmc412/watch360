@@ -6,7 +6,8 @@ class YouTubeData(models.Model):
     video_url = models.URLField()
     video_title = models.CharField(max_length=255)
     added_at = models.DateTimeField(auto_now_add=True)
-    duration = models.PositiveIntegerField(default=0)  # Set default to 0
+    duration = models.PositiveIntegerField()  # Duration in seconds
 
     def __str__(self):
         return self.video_title
+

@@ -159,34 +159,61 @@
     
     <!-- AJAX Script -->
     <script>
-        document.getElementById('youtube-search-form').addEventListener('submit', async function(event) {
-            event.preventDefault();  // Prevent form from refreshing the page
+    document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent default form behavior
 
-            const url = document.getElementById('youtube-url').value;
-            const csrfToken = '{{ csrf_token }}';  // CSRF token for security
+        const url = document.getElementById('youtube-url').value;
+        const csrfToken = '{{ csrf_token }}'; // CSRF token for security
 
-            try {
-                const response = await fetch("{% url 'search_video' %}", {
-                    method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': csrfToken,
-                    },
-                    body: JSON.stringify({ youtube_url: url })
-                });
+        try {
+            const response = await fetch("{% url 'search_video' %}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ youtube_url: url })
+            });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('video-title').innerText =
-                        data.title ? `Video Title: ${data.title}` : 'Title not found.';
-                } else {
-                    document.getElementById('video-title').innerText = 'Error fetching video title.';
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('video-title').innerText = 'An error occurred.';
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('video-title').innerText = 
+                    data.title ? `Video Title: ${data.title}` : 'Title not found.';
+
+                // Refresh the page after 1 second to show the new video in the list
+                setTimeout(() => {
+                    location.reload(); // Reload the page to reflect changes
+                }, 1000); // Optional delay for better UX
+            } else {
+                document.getElementById('video-title').innerText = 'Error fetching video title.';
             }
-        });
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('video-title').innerText = 'An error occurred.';
+        }
+    });
+    let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+
+    // Function to poll the server for video status
+    async function pollVideoStatus() {
+        try {
+            const response = await fetch("{% url 'check_videos_status' %}");
+            const data = await response.json();
+            const currentVideoCount = data.video_count;
+
+            if (currentVideoCount < previousVideoCount) {
+                // If a video was deleted, refresh the page
+                location.reload();
+            }
+        } catch (error) {
+            console.error("Error checking video status:", error);
+        }
+    }
+
+
+    setInterval(pollVideoStatus, 10000);
+
+
     </script>
 </body>
 </html>
