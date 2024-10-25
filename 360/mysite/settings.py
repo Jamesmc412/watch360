@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'background_task',
     'watchapp',
-    ]
+    'friendship',
+]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
@@ -19,6 +19,9 @@ from django.utils.timezone import now
 from django.db.models import F
 from datetime import timedelta
 from background_task import background
+from friendship.models import Friend, FriendshipRequest
+from django.http import HttpResponse
+
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -169,7 +172,8 @@ def register_view(request):
     error = None
 
     if request.method == 'POST':
-        fullname = request.POST['name']
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
         username = request.POST['username']
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
@@ -182,11 +186,9 @@ def register_view(request):
             error = "Passwords do not match."
         else:
             # Create a new user
-            user = User.objects.create(
-                username=username,
-                password=make_password(password),
-                first_name=fullname
-            )
+            user = User.objects.create_user(
+                username=username, password=password, 
+                first_name=first_name, last_name=last_name)
             messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
@@ -195,6 +197,14 @@ def register_view(request):
 def homepage(request):
     videos = YouTubeData.objects.all().order_by('-timestamp')  # Get all videos sorted by latest
     return render(request, 'watchapp/homepage.html', {'videos': videos})
+def homepage_view(request):
+# Get all friends of the logged-in user
+    friends = Friend.objects.friends(request.user)
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username} for friend in friends]
+
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
 
 def logout_view(request):
     # Clear the session data
@@ -224,3 +234,51 @@ def settings_view(request):
         return redirect('login')
 
     return render(request, 'watchapp/settings.html', {'user': user})
+
+# View to send a friend request
+@login_required
+def send_friend_request(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    if Friend.objects.are_friends(request.user, user):
+        return HttpResponse("You are already friends.")
+    
+    # Send the request
+    Friend.objects.add_friend(
+        request.user,           # The sender
+        user,                   # The recipient
+    )
+    return redirect('user_list')
+
+# View to accept a friend request
+@login_required
+def accept_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    
+    if friend_request.to_user != request.user:
+        return HttpResponse("You don't have permission to accept this request.")
+    
+    # Accept the request
+    friend_request.accept()
+    return redirect('user_list')
+
+# View to reject a friend request
+@login_required
+def reject_friend_request(request, request_id):
+    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    
+    if friend_request.to_user != request.user:
+        return HttpResponse("You don't have permission to reject this request.")
+    
+    # Reject the request
+    friend_request.reject()
+    return redirect('user_list')
+
+# View to unfriend someone
+@login_required
+def unfriend(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    
+    # Remove the friendship
+    Friend.objects.remove_friend(request.user, user)
+    return redirect('user_list')
