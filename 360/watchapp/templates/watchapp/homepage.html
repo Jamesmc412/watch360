@@ -73,6 +73,15 @@
         .main-content {
             margin-left: 220px;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-feature {
+            flex-grow: 1; /* Makes this section take up available space at the top */
+            padding-bottom: 20px;
+        }
+        .friend-section {
+            flex-shrink: 0; /* Keeps this section fixed at the bottom */
         }
         .friend-list {
             display: grid;
@@ -230,8 +239,15 @@
     </div>
 
     <div class="main-content">
-        <h2>Your Friends</h2>
-        <div class="friend-list">
+        <!-- New top feature section -->
+        <div class="top-feature">
+            <h2>Top Feature</h2>
+            <!-- Your content for the top half goes here -->
+        </div>
+    
+        <!-- Friend cards at the bottom -->
+        <div class="friend-section">
+            <h2>Your Friends</h2>
             <div class="friend-list">
                 {% for friend in friends %}
                     <div class="friend-card" onclick="openChat('{{ friend.username }}')">
@@ -240,6 +256,7 @@
                         <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
                     </div>
                 {% endfor %}
+            </div>
         </div>
     </div>
 
