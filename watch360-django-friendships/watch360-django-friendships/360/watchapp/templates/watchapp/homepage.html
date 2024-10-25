@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch360</title>
+    <style>
+        /* search task-rj */
+        .search-results.show {
+            display: block;
+        }
+        .friend-btn {
+            margin-left: 10px;
+            background-color: lightblue;
+            cursor: pointer;
+            padding: 5px;
+        }
+    </style>
+    <!-- Add jQuery for easy AJAX calls - rj -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Watch360</h1>
+        <div class="header-buttons">
+            <button onclick="location.href='{% url 'settings' %}'">Settings</button>
+            <button onclick="location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h3>Search People</h3>
+        <form id="search-form" onsubmit="return false;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> <!-- Add CSRF token-rj -->
+            <input type="text" id="search-input" placeholder="Search..." required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="search-results" class="search-results">     <!-- search task-rj-->
+            <!-- Autofill results will be injected here -->
+        </div>
+    </div>
+
+    <div class="main-content">
+        <h2>Your Friends</h2>
+        <div class="friend-list">
+            {% for friend in friends %}
+                <div class="friend-card">
+                    <h2>{{ friend.name }}</h2>
+                    <p>{{ friend.status }}</p>
+                    <p class="currently-watching">Currently watching: {{ friend.watching }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script> // search task-rj
+        // Function to get CSRF token from the form
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Function to send friend request via AJAX
+        function sendFriendRequest(userId) {
+            $.ajax({
+                url: '/send-request/' + userId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() // Include CSRF token in header
+                },
+                success: function(response) {
+                    alert('Friend request sent!'); // Notify the user when the request is successful
+                },
+                error: function(xhr, status, error) {
+                    alert('Error sending friend request.'); // Handle any errors
+                }
+            });
+        }
+      // search task-rj ///////////////////////////////////////////////////////////////////////////////////////////
+        // AJAX logic to handle search input and display results
+        $(document).ready(function() {
+            $('#search-input').on('keyup', function() {
+                var query = $(this).val();
+                if (query.length > 2) {
+                    $.ajax({
+                        url: '{% url "search_users" %}', // Django view that handles search
+                        data: { 'q': query },
+                        dataType: 'json',
+                        success: function(data) {
+                            var resultsDiv = $('#search-results');
+                            resultsDiv.empty(); // Clear previous results
+                            if (data.length > 0) {
+                                $.each(data, function(index, user) {
+                                    resultsDiv.append('<div>' + user.username + 
+                                        '<button class="friend-btn" onclick="sendFriendRequest(' + user.id + ')">Add Friend</button></div>');
+                                });
+                                resultsDiv.addClass('show');
+                            } else {
+                                resultsDiv.removeClass('show');
+                            }
+                        }
+                    });
+                } else {
+                    $('#search-results').removeClass('show'); // Hide results if query is too short
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
+
