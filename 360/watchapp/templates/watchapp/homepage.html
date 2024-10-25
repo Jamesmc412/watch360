@@ -30,23 +30,16 @@
             font-size: 24px;
             color: white;
         }
-        .header dot {
+        .header span{
             width: 13px;
             height: 13px;
             border-radius: 50%;
             display: inline-block;
         }
-        .gray {
+        .offline {
             background-color: #bbbbbb;
         }
-        .green {
-            background-color: #2ca243;
-        }
-        .header span  {
-            width: 13px;
-            height: 13px;
-            border-radius: 50%;
-            display: inline-block;
+        .online {
             background-color: #2ca243;
         }
         .header-buttons {
@@ -208,17 +201,23 @@
         });
     </script>    
     <script>
-        const dotColor = document.getElementById('onlineVisDot');
+        const onlineVis = document.getElementById('onlineVisDot');
 
-        const isOnline = localstorage.getItem('isOnline') === true;
-        
-        if (isOnline) {
-            dotColor.classList.add('green')
-        }
-        else {
-            dotColor.classList.add('gray')
+        // Function to update span class based on saved checkbox state
+        function updateSpanClass() {
+            const isChecked = localStorage.getItem('isOnline') === 'true';
+            
+            if (isChecked) {
+                onlineVis.classList.add('online');
+                onlineVis.classList.remove('offline');
+            } else {
+                onlineVis.classList.add('offline');
+                onlineVis.classList.remove('online');
+            }
         }
 
+        // this checks the status of the isOnline every second
+        setInterval(updateSpanClass, 1000);
     </script>
 </body>
 </html>

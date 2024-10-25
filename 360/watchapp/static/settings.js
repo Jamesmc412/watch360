@@ -1,9 +1,10 @@
-// Determine the current page
-const settingsPanel = document.getElementById('SettingsPanel')
+const settingsPanel = document.getElementById('SettingsPanel');
+const bodyBG = document.body.style;
+const lightDarkMode = document.getElementById('lightDarkMode');
+const isOnline = document.getElementById('onlineOffline');
 
 // Code specific to the first HTML file
-document.getElementById('lightDarkMode').addEventListener('change', e => {
-    const bodyBG = document.body.style;
+lightDarkMode.addEventListener('change', (e) => {
     if (e.target.checked) {
         settingsPanel.classList.add('dark');
         bodyBG.backgroundColor = 'black';
@@ -13,10 +14,15 @@ document.getElementById('lightDarkMode').addEventListener('change', e => {
     }
 });
 
-const isOnline = document.getElementById('onlineOffline');
-isOnline.checked = localStorage.getItem('isOnline') === true;
-
-isOnline.addEventListener('change', () =>{
-    localStorage.setItem('isOnline', isOnline.checked);
-
+// Set the initial state of isOnline checkbox on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const isChecked = localStorage.getItem('checkboxState') === 'true';
+    isOnline.checked = isChecked;
 });
+
+// Save the checkbox state when it changes
+isOnline.addEventListener('change', () => {
+    localStorage.setItem('checkboxState', isOnline.checked.toString());
+    localStorage.setItem('isOnline', isOnline.checked.toString());
+});
+
