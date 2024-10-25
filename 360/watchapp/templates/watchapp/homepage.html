@@ -39,23 +39,29 @@
         .sidebar {
             width: 200px;
             background-color: #242424;
-            height: 100vh;
+            height: 85vh;
             position: fixed;
             top: 79px;
             left: 0;
             padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;  /* Ensures the form is at the bottom */
         }
         .sidebar h3 {
             color: white;
         }
-        .sidebar form input {
+        .youtube-search {
+            margin-top: auto;  /* Pushes the form to the bottom */
+        }
+        .youtube-search input {
             width: 90%;
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
             border: 1px solid #ccc;
         }
-        .sidebar form button {
+        .youtube-search button {
             width: 100%;
             padding: 10px;
             background-color: #107c10;
@@ -91,24 +97,6 @@
             color: #ccc;
             margin-top: 10px;
         }
-        .video-list {
-            margin-top: 40px;
-        }
-        .video-card {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-        }
-        .video-card h3 {
-            margin: 0;
-            color: #107c10;
-        }
-        .video-card a {
-            color: #107c10;
-            text-decoration: none;
-        }
     </style>
 </head>
 <body>
@@ -124,14 +112,20 @@
 
     <!-- Sidebar with YouTube Search -->
     <div class="sidebar">
-        <h3>Search YouTube Video</h3>
-        <form id="youtube-search-form">
-            <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
-            <button type="submit">Search</button>
-        </form>
-        <p id="video-title" style="margin-top: 10px; color: white;"></p>
-    </div>
+        <div>
+            <h3>Your Friends</h3>
+            <!-- Other sidebar content can go here -->
+        </div>
 
+        <div class="youtube-search">
+            <h3>Search YouTube Video</h3>
+            <form id="youtube-search-form">
+                <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+                <button type="submit">Search</button>
+            </form>
+            <p id="video-title" style="margin-top: 10px; color: white;"></p>
+        </div>
+    </div>
 
     <!-- Main Content Section -->
     <div class="main-content">
@@ -156,7 +150,6 @@
         </div>
     </div>
 
-    
     <!-- AJAX Script -->
     <script>
     document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
@@ -180,10 +173,9 @@
                 document.getElementById('video-title').innerText = 
                     data.title ? `Video Title: ${data.title}` : 'Title not found.';
 
-                // Refresh the page after 1 second to show the new video in the list
                 setTimeout(() => {
                     location.reload(); // Reload the page to reflect changes
-                }, 1000); // Optional delay for better UX
+                }, 1000);
             } else {
                 document.getElementById('video-title').innerText = 'Error fetching video title.';
             }
@@ -192,9 +184,9 @@
             document.getElementById('video-title').innerText = 'An error occurred.';
         }
     });
+
     let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
 
-    // Function to poll the server for video status
     async function pollVideoStatus() {
         try {
             const response = await fetch("{% url 'check_videos_status' %}");
@@ -202,7 +194,6 @@
             const currentVideoCount = data.video_count;
 
             if (currentVideoCount < previousVideoCount) {
-                // If a video was deleted, refresh the page
                 location.reload();
             }
         } catch (error) {
@@ -210,10 +201,8 @@
         }
     }
 
-
     setInterval(pollVideoStatus, 10000);
-
-
     </script>
+
 </body>
 </html>
