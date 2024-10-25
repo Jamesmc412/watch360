@@ -74,22 +74,22 @@
             margin-left: 220px;
             padding: 20px;
         }
-        .friend-list {
+        .video-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 20px;
         }
-        .friend-card {
+        .video-card {
             background-color: #333;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
         }
-        .friend-card h2 {
+        .video-card h2 {
             font-size: 18px;
             margin-bottom: 5px;
         }
-        .friend-card p {
+        .video-card p {
             font-size: 14px;
             color: #bbb;
         }
@@ -130,10 +130,10 @@
     <!-- Main Content Section -->
     <div class="main-content">
         <h2>Your Recently Added Videos</h2>
-        <div class="friend-list">
+        <div class="video-list">
             {% if user_videos %}
                 {% for video in user_videos %}
-                    <div class="friend-card">
+                    <div class="video-card">
                         <h2>{{ video.video_title }}</h2>
                         <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
                         <p class="currently-watching">Added on: {{ video.added_at }}</p>
