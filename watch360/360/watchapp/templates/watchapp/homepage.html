@@ -267,27 +267,54 @@
             <button class="chat-close" onclick="closeChat()">X</button>
         </div>
         <div class="chat-body" id="chat-body">
-            <!-- Example Chat Bubbles -->
-            <div class="chat-message-wrapper">
-                <div class="chat-bubble receiver">Hey! How's it going?</div>
-                <div class="chat-bubble sender">All good here! Just watching a new show. How about you?</div>
-                <div class="chat-bubble receiver">Nice! I'm watching the same one too!</div>
-            </div>
+            <!-- Chat messages will remain here -->
         </div>
         <div class="chat-input">
-            <textarea placeholder="Type your message..."></textarea>
-            <button class="chat-send-button">Send</button>
+            <textarea id="chat-input-message" placeholder="Type your message..."></textarea>
+            <button class="chat-send-button" onclick="sendMessage()">Send</button>
         </div>
     </div>
 
     <script>
+        let chatHistory = {};
+
         function openChat(friendName) {
             document.getElementById('chat-friend-name').textContent = friendName;
             document.getElementById('chat-widget').style.right = '0px'; // Slide chat widget in
+            document.getElementById('chat-input-message').value = ''; // Clear input field
+            if (!chatHistory[friendName]) {
+                chatHistory[friendName] = []; // Initialize chat history for new friend
+            }
+            displayChatHistory(friendName);
         }
 
         function closeChat() {
             document.getElementById('chat-widget').style.right = '-400px'; // Slide chat widget out
+            // Chat history remains visible for reopening
+        }
+
+        function displayChatHistory(friendName) {
+            const chatBody = document.getElementById('chat-body');
+            chatBody.innerHTML = ''; // Clear the chat body to re-render
+
+            chatHistory[friendName].forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
+                messageDiv.textContent = msg.text;
+                chatBody.appendChild(messageDiv);
+            });
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('chat-input-message');
+            const messageText = messageInput.value;
+            const friendName = document.getElementById('chat-friend-name').textContent;
+
+            if (messageText) {
+                chatHistory[friendName].push({ sender: 'me', text: messageText }); // Save the message
+                displayChatHistory(friendName); // Refresh chat display
+                messageInput.value = ''; // Clear input
+            }
         }
     </script>
 
