@@ -1,14 +1,16 @@
-const socket = new WebSocket('ws://localhost:8000/ws/chat/');
+const chatSocket = new WebSocket(
+    'ws://' + window.location.host + '/ws/chat/'
+);
 
-socket.onmessage = function(event) {
-    const messages = document.getElementById('messages');
-    const message = JSON.parse(event.data);
-    messages.innerHTML += `<div>${message.content}</div>`;
+chatSocket.onopen = function (e) {
+    console.log('WebSocket connection established.');
 };
 
-document.getElementById('send-button').onclick = function() {
-    const input = document.getElementById('message-input');
-    const message = input.value;
-    socket.send(JSON.stringify({ 'content': message }));
-    input.value = '';
+chatSocket.onmessage = function (e) {
+    const data = JSON.parse(e.data);
+    console.log(`Message from ${data.username}: ${data.message} at ${data.time}`);
+};
+
+chatSocket.onclose = function (e) {
+    console.error('WebSocket closed unexpectedly.');
 };

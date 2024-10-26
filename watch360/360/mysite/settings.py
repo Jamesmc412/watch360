@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'watchapp.apps.WatchappConfig',  # Keep this only
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,9 +40,9 @@ INSTALLED_APPS = [
     'daphne',
     'django.contrib.staticfiles',
     'channels',
-    'watchapp',
     'friendship',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -129,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'login'  # Redirect to login if not authenticated
 
 CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
-    }
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Local testing
+    },
 }
