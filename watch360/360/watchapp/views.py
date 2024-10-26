@@ -9,6 +9,10 @@ from django.contrib.auth import update_session_auth_hash
 from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse
 
+def chat_view(request):
+    return render(request, 'chat.html')
+
+
 def login_view(request):
     error = None
     if request.method == 'POST':
