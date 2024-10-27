@@ -7,7 +7,9 @@ from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from friendship.models import Friend, FriendshipRequest
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
+from django.db.models import Q  # Added for search functionality
+from friendship.exceptions import AlreadyExistsError
 
 def login_view(request):
     error = None
@@ -54,7 +56,7 @@ def register_view(request):
     return render(request, 'watchapp/register.html', {'error': error})
 
 def homepage_view(request):
-# Get all friends of the logged-in user
+    # Get all friends of the logged-in user
     friends = Friend.objects.friends(request.user)
 
     # Create a list of usernames from the friends queryset
@@ -91,20 +93,23 @@ def settings_view(request):
 
     return render(request, 'watchapp/settings.html', {'user': user})
 
-# View to send a friend request
 @login_required
 def send_friend_request(request, user_id):
     user = get_object_or_404(User, id=user_id)
     
+    # Check if they are already friends
     if Friend.objects.are_friends(request.user, user):
-        return HttpResponse("You are already friends.")
-    
-    # Send the request
-    Friend.objects.add_friend(
-        request.user,           # The sender
-        user,                   # The recipient
-    )
-    return redirect('user_list')
+        return JsonResponse({'status': 'already_friends'})
+
+    # Try to send the friend request and catch the AlreadyExistsError
+    try:
+        Friend.objects.add_friend(
+            request.user,           # The sender
+            user                    # The recipient
+        )
+        return JsonResponse({'status': 'success'})
+    except AlreadyExistsError:
+        return JsonResponse({'status': 'already_requested'})  # Handle the case when the request was already sent
 
 # View to accept a friend request
 @login_required
@@ -138,3 +143,13 @@ def unfriend(request, user_id):
     # Remove the friendship
     Friend.objects.remove_friend(request.user, user)
     return redirect('user_list')
+    
+# search taask -rj
+@login_required
+def search_users(request):
+    query = request.GET.get('q', None)
+    if query:
+        users = User.objects.filter(Q(username__icontains=query)).exclude(id=request.user.id)
+        user_data = [{'id': user.id, 'username': user.username} for user in users]  # Include user ID
+        return JsonResponse(user_data, safe=False)
+    return JsonResponse([], safe=False)
