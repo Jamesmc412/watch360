@@ -15,6 +15,7 @@ pip install django-friendship
 pip install django-htmx
 pip install requests
 pip install virtualenv
+pip install beautifulsoup
 
 After to run the server you need to do:
 
