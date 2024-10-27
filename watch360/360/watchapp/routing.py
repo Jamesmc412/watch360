@@ -1,7 +1,7 @@
-# routing.py
-from django.urls import path
-from . import consumers
+from django.urls import path, include
+from watchapp.consumers import ChatConsumer  # Correct import
 
+# the empty string routes to ChatConsumer, which manages the chat functionality.
 websocket_urlpatterns = [
-    path('ws/chat/', consumers.ChatConsumer.as_asgi()),
+    path("", ChatConsumer.as_asgi()),
 ]
