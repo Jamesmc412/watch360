@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +24,23 @@
             font-size: 24px;
             margin: 0;
             color: white;
+        }
+        .header h2 {
+            margin: auto;
+            font-size: 24px;
+            color: white;
+        }
+        .header span{
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .offline {
+            background-color: #bbbbbb;
+        }
+        .online {
+            background-color: #2ca243;
         }
         .header-buttons {
             display: flex;
@@ -85,17 +104,32 @@
             border-radius: 10px;
             text-align: center;
         }
-        .video-card h2 {
-            font-size: 18px;
-            margin-bottom: 5px;
+        .friend-card h2 { 
+            font-size: 18px; margin-bottom: 5px; 
         }
-        .video-card p {
-            font-size: 14px;
-            color: #bbb;
+        .friend-card p { 
+            font-size: 14px; color: #bbb; 
         }
-        .currently-watching {
-            color: #ccc;
-            margin-top: 10px;
+        .currently-watching { 
+            color: #ccc; margin-top: 10px; 
+        }
+        .video-list {
+            margin-top: 40px;
+        }
+        .video-card {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .video-card h3 {
+            margin: 0;
+            color: #107c10;
+        }
+        .video-card a {
+            color: #107c10;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -104,6 +138,9 @@
     <!-- Header Section -->
     <div class="header">
         <h1>Watch360</h1>
+        <h2>Hello {{user.username}} &nbsp; 
+            <span class="dot" id="onlineVisDot"></span>
+        </h2>
         <div class="header-buttons">
             <button onclick="location.href='{% url 'settings' %}'">Settings</button>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
@@ -130,10 +167,10 @@
     <!-- Main Content Section -->
     <div class="main-content">
         <h2>Your Recently Added Videos</h2>
-        <div class="video-list">
+        <div class="friend-list">
             {% if user_videos %}
                 {% for video in user_videos %}
-                    <div class="video-card">
+                    <div class="friend-card">
                         <h2>{{ video.video_title }}</h2>
                         <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
                         <p class="currently-watching">Added on: {{ video.added_at }}</p>
