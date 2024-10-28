@@ -86,6 +86,12 @@ Start the Django development server:
 
     python manage.py runserver
 
+Start the Django background services:
+
+.. code-block:: console
+
+    python manage.py runserver
+
 Visit `http://localhost:8000/watchapp/login` to access the application.
 
 To access the admin page for database management, visit `http://localhost:8000/admin`.
