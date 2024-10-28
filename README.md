@@ -17,6 +17,8 @@ pip install requests
 pip install virtualenv
 pip install beautifulsoup
 
+You may have to install redis, you will have to use software from the web to do so.
+
 After to run the server you need to do:
 
 python manage.py migrate 
