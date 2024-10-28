@@ -8,7 +8,13 @@ Welcome to watch360's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   introduction
    usage
+   setup&install
+   core_components
+   directory_structure
+   deployment
+
 
 Indices and tables
 ==================

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>YouTube Video Input &mdash; Watch360  documentation</title>
+  <title>Directory Structure &mdash; Watch360  documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -19,8 +19,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Friending" href="friending.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
+    <link rel="next" title="Deployment" href="deployment.html" />
+    <link rel="prev" title="Core Components" href="core_components.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -45,16 +45,11 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to Watch360</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="usage.html">Usage</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">YouTube Video Input</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#example">Example:</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="friending.html">Friending</a></li>
-<li class="toctree-l2"><a class="reference internal" href="chatting.html">Chatting with Friends</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="setup%26install.html">Setup and Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core_components.html">Core Components</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Directory Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
 </ul>
 
         </div>
@@ -71,10 +66,9 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="usage.html">Usage</a></li>
-      <li class="breadcrumb-item active">YouTube Video Input</li>
+      <li class="breadcrumb-item active">Directory Structure</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="_sources/youtube_input.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/directory_structure.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -82,29 +76,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="youtube-video-input">
-<h1>YouTube Video Input<a class="headerlink" href="#youtube-video-input" title="Link to this heading"></a></h1>
-<p>To use the YouTube video input feature, follow these steps:</p>
-<ol class="arabic simple">
-<li><p><strong>Copy the YouTube URL</strong>:
-- While watching a video on YouTube, copy the URL from your browser’s address bar.</p></li>
-<li><p><strong>Input the URL</strong>:
-- Return to the watch360 application and paste the copied URL into the video input form.</p></li>
-<li><p><strong>Share with Friends</strong>:
-- After submitting the URL, your current video will be visible to your friends.</p></li>
-</ol>
-<section id="example">
-<h2>Example:<a class="headerlink" href="#example" title="Link to this heading"></a></h2>
-<p><a class="reference external" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ">https://www.youtube.com/watch?v=dQw4w9WgXcQ</a></p>
-</section>
+  <section id="directory-structure">
+<h1>Directory Structure<a class="headerlink" href="#directory-structure" title="Link to this heading"></a></h1>
+<p>This overview describes the directory structure of the <cite>watch360</cite> project, highlighting important files and folders.</p>
+<p><strong>Project Tree</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>| watch360/
+| ├── watchapp/                # Main application folder with app-specific code
+| │   ├── migrations/          # Django migrations
+| │   ├── templates/           # HTML templates
+| │   └── views.py             # Application views
+| ├── docs/                    # Documentation files
+| │   ├── source/              # Sphinx source files (.rst)
+| │   └── build/               # Built HTML documentation
+| ├── manage.py                # Django management script
+| ├── requirements.txt         # List of dependencies
+| └── README.md                # Project overview
+</pre></div>
+</div>
+<p>Key Directories:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">watchapp</span><span class="o">/</span><span class="p">:</span> <span class="n">Contains</span> <span class="n">core</span> <span class="n">app</span> <span class="n">code</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">docs</span><span class="o">/</span><span class="p">:</span> <span class="n">Holds</span> <span class="n">Sphinx</span> <span class="n">documentation</span> <span class="n">files</span><span class="o">.</span>
+<span class="o">-</span> <span class="n">manage</span><span class="o">.</span><span class="n">py</span><span class="p">:</span> <span class="n">Used</span> <span class="n">to</span> <span class="n">run</span> <span class="ow">and</span> <span class="n">manage</span> <span class="n">the</span> <span class="n">Django</span> <span class="n">project</span><span class="o">.</span>
+</pre></div>
+</div>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="friending.html" class="btn btn-neutral float-right" title="Friending" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="core_components.html" class="btn btn-neutral float-left" title="Core Components" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="deployment.html" class="btn btn-neutral float-right" title="Deployment" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
