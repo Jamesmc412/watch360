@@ -5,7 +5,7 @@ build:
       python: "3"
 
 sphinx:
-  configuration: source/conf.py
+  configuration: watch360/360/source/conf.py
 
 formats:
   - pdf
