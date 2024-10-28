@@ -11,6 +11,5 @@ formats:
   - pdf
 
 python:
-  version: 3.12
   install:
     - requirements: watch360/360/requirements.txt
