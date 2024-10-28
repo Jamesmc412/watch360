@@ -1,11 +1,27 @@
-Create a virtual python environment on your computer. 
-Install Django in the virtual environment. 
-***For friendships table, you will need to also "pip install django-friendship" in your virtual environment.***
-Clone this branch into the virtual environment. 
-Run the command "python manage.py runserver" to start the server. 
+To run the friendship and youtube Scraping code you need to install these modules using these commands:
 
-Admin page: http://localhost:8000/admin
-Login page: http://localhost:8000/login
-Register page: http://localhost:8000/register
+pip install daphne
+pip install --upgrade Django daphne channels
+pip install -U rdflib
+pip install django-background-tasks
+pip install channels
+pip install channels-redis
+pip install charset-normalizer
+pip install Django
+pip install django-allauth
+pip install django-background-tasks
+pip install django-cleanup
+pip install django-friendship
+pip install django-htmx
+pip install requests
+pip install virtualenv
+pip install beautifulsoup
 
-***Chat is on homepage when you click on a friend card***
+You may have to install redis, you will have to use software from the web to do so.
+
+After to run the server you need to do:
+
+python manage.py migrate 
+python manage.py runserver
+
+then you will click the ip address link and it will take you to the website.

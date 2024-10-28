@@ -1,0 +1,196 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Setup and Installation &mdash; Watch360  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core Components" href="core_components.html" />
+    <link rel="prev" title="Chatting with Friends" href="chatting.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Watch360
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction to Watch360</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Setup and Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#clone-the-repository">Clone the Repository</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#navigate-to-the-project-directory">Navigate to the Project Directory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#create-the-virtual-environment">Create the Virtual Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#activate-the-virtual-environment">Activate the Virtual Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#install-dependencies">Install Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#database-setup">Database Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#run-the-django-server">Run the Django Server</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="core_components.html">Core Components</a></li>
+<li class="toctree-l1"><a class="reference internal" href="directory_structure.html">Directory Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Deployment</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Watch360</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Setup and Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/setup&amp;install.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="setup-and-installation">
+<h1>Setup and Installation<a class="headerlink" href="#setup-and-installation" title="Link to this heading"></a></h1>
+<p>This guide walks you through setting up and running Watch360 locally for development.</p>
+<section id="prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Python 3.12+</strong>: Ensure Python is installed. You can check with <cite>python –version</cite>.</p></li>
+<li><p><strong>Virtual Environment</strong>: Recommended for managing dependencies.</p></li>
+</ul>
+</section>
+<section id="clone-the-repository">
+<h2>Clone the Repository<a class="headerlink" href="#clone-the-repository" title="Link to this heading"></a></h2>
+<p>Start by cloning the project repository:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">git clone https://github.com/Jamesmc412/watch360.git</span>
+</pre></div>
+</div>
+</section>
+<section id="navigate-to-the-project-directory">
+<h2>Navigate to the Project Directory<a class="headerlink" href="#navigate-to-the-project-directory" title="Link to this heading"></a></h2>
+<p>Open the project folder:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd watch360</span>
+</pre></div>
+</div>
+</section>
+<section id="create-the-virtual-environment">
+<h2>Create the Virtual Environment<a class="headerlink" href="#create-the-virtual-environment" title="Link to this heading"></a></h2>
+<p>To create a virtual environment:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m venv /path/to/new/virtual/environment</span>
+</pre></div>
+</div>
+</section>
+<section id="activate-the-virtual-environment">
+<h2>Activate the Virtual Environment<a class="headerlink" href="#activate-the-virtual-environment" title="Link to this heading"></a></h2>
+<ul>
+<li><p><strong>Windows</strong>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">venv\Scripts\activate</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Mac/Linux</strong>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">source venv/bin/activate</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="install-dependencies">
+<h2>Install Dependencies<a class="headerlink" href="#install-dependencies" title="Link to this heading"></a></h2>
+<p>Install the required packages listed in <cite>watch360/360/docs/requirements.txt</cite>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">pip install -r 360/docs/requirements.txt</span>
+</pre></div>
+</div>
+</section>
+<section id="database-setup">
+<h2>Database Setup<a class="headerlink" href="#database-setup" title="Link to this heading"></a></h2>
+<p>Watch360 uses SQLite, which comes with Django installation.</p>
+<p>Make sure you are in the project directory:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd 360</span>
+</pre></div>
+</div>
+<p>Run Migrations:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python manage.py migrate</span>
+</pre></div>
+</div>
+</section>
+<section id="run-the-django-server">
+<h2>Run the Django Server<a class="headerlink" href="#run-the-django-server" title="Link to this heading"></a></h2>
+<p>Start the Django development server:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python manage.py runserver</span>
+</pre></div>
+</div>
+<p>Visit <cite>http://localhost:8000/watchapp/login</cite> to access the application.</p>
+<p>To access the admin page for database management, visit <cite>http://localhost:8000/admin</cite>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="chatting.html" class="btn btn-neutral float-left" title="Chatting with Friends" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core_components.html" class="btn btn-neutral float-right" title="Core Components" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Hayley Owen, James McMahan, RJ Banks, Sean Bell.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
