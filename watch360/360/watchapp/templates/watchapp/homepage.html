@@ -95,6 +95,23 @@
             text-align: center;
             cursor: pointer;
         }
+        .onlineStatusContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .onlineStatus {
+            font-size: 14px;
+            color: #107c10;
+        }
+        .dot {
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background-color: #bbbbbb;
+            margin-left: 10px;
+        }
+        
         .friend-card:hover {
             background-color: #292929;
         }
@@ -278,7 +295,10 @@
                 {% for friend in friends %}
                     <div class="friend-card" onclick="openChat('{{ friend.username }}')">
                         <h2>{{ friend.username }}</h2>
-                        <p>Online</p> <!-- Placeholder for status -->
+                        <div class="onlineStatusContainer">
+                            <p class="onlineStatus">Online:</p>
+                            <span class="dot" id="onlineVisDot"></span> <!-- Placeholder for status -->
+                        </div>
                         <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
                     </div>
                 {% endfor %}
