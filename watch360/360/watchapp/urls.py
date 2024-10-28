@@ -9,6 +9,7 @@ urlpatterns = [
     path('settings/', settings_view, name='settings'),
     path('logout/', logout_view, name='logout'),
     path('chat/', chat_view, name='chat'),
+    path('search/', views.search_users, name='search_users'),    # search task-rj
     #testing django-friendship
     path('users/', views.user_list, name='user_list'),
     path('send-request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),

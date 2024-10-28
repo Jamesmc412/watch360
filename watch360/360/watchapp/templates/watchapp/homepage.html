@@ -218,7 +218,29 @@
             display: flex;
             flex-direction: column;
         }
+
+         /* Additional CSS for search task-rj */
+         .search-results.show {
+            display: block;
+            align-items: center;         /* Vertically align the button and username */
+            padding: 5px 0; 
+            color: white;
+        }
+        .friend-btn {
+            margin-left: 10px;
+            align-items: center; 
+            background-color: #107c10;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 10px;
+            color: white;
+        }
+        .friend-btn:hover {
+            background-color: rgb(0, 252, 71); /* Add hover effect */
+        }
     </style>
+    <!-- Add jQuery for easy AJAX calls - rj -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
@@ -232,10 +254,14 @@
 
     <div class="sidebar">
         <h3>Search People</h3>
-        <form>
-            <input type="text" name="friend_name" placeholder="Search by username" required>
+        <form id="search-form" onsubmit="return false;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> <!-- Add CSRF token-rj -->
+            <input type="text" id="search-input" placeholder="Search..." required>
             <button type="submit">Search</button>
         </form>
+        <div id="search-results" class="search-results">     <!-- search task-rj-->
+            <!-- Autofill results will be injected here -->
+        </div>
     </div>
 
     <div class="main-content">
@@ -376,8 +402,69 @@
             }
             chatHistory[friendName].push({ sender: friendName, text: data.message });
         };
+
+        // Function to get CSRF token from the form
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Function to send friend request via AJAX
+        function sendFriendRequest(userId) {
+            $.ajax({
+                url: '/watchapp/send-request/' + userId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Friend request sent!');
+                    } else if (response.status === 'already_friends') {
+                        alert('You are already friends with this user.');
+                    } else if (response.status === 'already_requested') {
+                        alert('Friend request already sent.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error sending friend request.');
+                }
+            });
+        }
+
+
+        // AJAX logic to handle search input and display results
+        $(document).ready(function() {
+            $('#search-input').on('keyup', function() {
+                var query = $(this).val();
+                var resultsDiv = $('#search-results');
+                
+                if (query.length > 2) {
+                    $.ajax({
+                        url: '{% url "search_users" %}', // Django view that handles search
+                        data: { 'q': query },
+                        dataType: 'json',
+                        success: function(data) {
+                            resultsDiv.empty(); // Clear previous results
+                            if (data.length > 0) {
+                                $.each(data, function(index, user) {
+                                    resultsDiv.append('<div>' + user.username + 
+                                        '<button class="friend-btn" onclick="sendFriendRequest(' + user.id + ')">Add Friend</button></div>');
+                                });
+                                resultsDiv.addClass('show');
+                            } else {
+                                resultsDiv.removeClass('show');
+                            }
+                        }
+                    });
+                } else if (query.length === 0) {  // If input is cleared, hide the results
+                    resultsDiv.empty();           // Clear any displayed results
+                    resultsDiv.removeClass('show'); // Hide the results container
+                }
+            });
+        });
     </script>
 
 
 </body>
 </html>
+
