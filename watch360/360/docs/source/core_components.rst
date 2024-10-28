@@ -23,6 +23,19 @@ Security:
 
 Video Sharing
 -------------
+
+Purpose:
+
+    Allows users to put in what video they are watching and displays the video info for all the users friends to see.
+
+:Key Components:
+- Video Search/URL Input: User will type/copy&paste the URL of the current video they are watching into the search bar and then hit the search button.
+- Video Delete: User will have a video in the database and if they want to manually delete the video then press the red delete button.
+- Video Hyperlink: User will have a hyperlink on the You Tube block that can be pressed to be directed to the exact video.
+
+Database:
+
+    The video storing system uses Django-backend, which stores the video info in a SQLite table. The video table stores the user, video url, video name.
 ..
     Suggestions from ChatGPT
     Purpose: Describe how users share and display YouTube videos in the app.
@@ -54,6 +67,20 @@ Database:
 
 Real-Time Chat
 --------------
+
+Purpose:
+
+    Allows users to be able to directly chat with their friends.
+
+:Key Components:
+
+- Connection(Django Channels): Users are connect when both users open the chat. This connection is by peer-to-peer.
+- Chat Interface: Users can message each other through a widget. This widget pops up when the user clicks their friend block. The widget will appear on the bottom-right corner.
+- Messaging: Users can message each by typing in the typing bar on the widget. To send the message they will need to press the send button.
+
+Database:
+
+    There is no storage capability right now. It is instead stored in short term memory.
 ..
     Suggestions from ChatGPT
     Purpose: Enables direct chat between friends.
