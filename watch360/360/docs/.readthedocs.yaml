@@ -5,11 +5,11 @@ build:
       python: "3"
 
 sphinx:
-  configuration: watch360/360/source/conf.py
+  configuration: source/conf.py
 
 formats:
   - pdf
 
 python:
   install:
-    - requirements: watch360/360/requirements.txt
+    - requirements: requirements.txt
