@@ -44,7 +44,7 @@ Purpose:
 .. 
     Describe how users search by username and the search algorithm used.
 
-- Friend Search: 
+- Friend Search: Users can search for friends by typing a username. If users are found, their usernames are dynamically displayed along with an "Add Friend" button next to each result.
 - Friend Request: Users hit the "Friend" button in the search results to send a friend request to the other user. 
 - Friend List: Users can see their friends' usernames, online status, and what they are currently watching on the Friends List on the homepage. 
 
