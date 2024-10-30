@@ -270,6 +270,52 @@
             <h2>Top Feature</h2>
             <!-- Your content for the top half goes here -->
         </div>
+        <!-- Friend Request Notification Modal -->
+<div id="friend-request-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>New Friend Request from <span id="request-username"></span></h3>
+        <div class="modal-buttons">
+            <button id="accept-friend-request" class="btn-accept">Accept</button>
+            <button id="decline-friend-request" class="btn-decline">Decline</button>
+            <button id="close-modal" class="btn-close">Close</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Basic modal styling */
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background-color: white;
+    padding: 20px;
+    border: 1px solid #ccc;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+}
+.modal-content {
+    text-align: center;
+}
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+.btn-accept, .btn-decline, .btn-close {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+}
+.btn-accept { background-color: #107c10; color: white; }
+.btn-decline { background-color: red; color: white; }
+.btn-close { background-color: gray; color: white; }
+</style>
+
     
         <!-- Friend cards at the bottom -->
         <div class="friend-section">
@@ -402,6 +448,62 @@
             }
             chatHistory[friendName].push({ sender: friendName, text: data.message });
         };
+        function showFriendRequestModal(username, requestId) {
+    document.getElementById('request-username').textContent = username;
+    document.getElementById('friend-request-modal').style.display = 'block';
+
+    // Handle Accept button click
+    document.getElementById('accept-friend-request').onclick = function() {
+        handleFriendRequest(requestId, 'accept');
+    };
+
+    // Handle Decline button click
+    document.getElementById('decline-friend-request').onclick = function() {
+        handleFriendRequest(requestId, 'decline');
+    };
+
+    // Handle Close button click
+    document.getElementById('close-modal').onclick = function() {
+        document.getElementById('friend-request-modal').style.display = 'none';
+    };
+}
+
+// Function to handle accept/decline actions via AJAX  handles notifications as well
+        function handleFriendRequest(requestId, action) {
+            $.ajax({
+                url: '/watchapp/' + action + '-request/' + requestId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken() // Send CSRF token
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Friend request ' + action + 'ed successfully.');
+                        document.getElementById('friend-request-modal').style.display = 'none';
+                    } else {
+                        alert('Failed to ' + action + ' friend request.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error handling friend request.');
+                }
+            });
+        }
+        // Poll the server for new friend requests every 10 seconds
+        setInterval(function() {
+            $.ajax({
+                url: '/watchapp/check-new-requests/',
+                type: 'GET',
+                success: function(response) {
+                    if (response.new_requests.length > 0) {
+                        response.new_requests.forEach(request => {
+                            showFriendRequestModal(request.from_username, request.request_id);
+                        });
+                    }
+                }
+            });
+        }, 10000);
+
 
         // Function to get CSRF token from the form
         function getCSRFToken() {

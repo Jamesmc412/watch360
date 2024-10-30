@@ -16,4 +16,5 @@ urlpatterns = [
     path('accept-request/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('reject-request/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
     path('unfriend/<int:user_id>/', views.unfriend, name='unfriend'),
+    path('check-new-requests/', views.check_new_requests, name='check_new_requests'),  ### notifcation friend
 ]

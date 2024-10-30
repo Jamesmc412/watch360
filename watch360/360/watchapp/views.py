@@ -138,23 +138,21 @@ def accept_friend_request(request, request_id):
     friend_request = get_object_or_404(FriendshipRequest, id=request_id)
     
     if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to accept this request.")
-    
-    # Accept the request
-    friend_request.accept()
-    return redirect('user_list')
+        return JsonResponse({'status': 'error', 'message': "Permission denied"})
 
-# View to reject a friend request
+    friend_request.accept()
+    return JsonResponse({'status': 'success'})
+
 @login_required
 def reject_friend_request(request, request_id):
     friend_request = get_object_or_404(FriendshipRequest, id=request_id)
     
     if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to reject this request.")
-    
-    # Reject the request
+        return JsonResponse({'status': 'error', 'message': "Permission denied"})
+
     friend_request.reject()
-    return redirect('user_list')
+    return JsonResponse({'status': 'success'})
+
 
 # View to unfriend someone
 @login_required
@@ -174,3 +172,10 @@ def search_users(request):
         user_data = [{'id': user.id, 'username': user.username} for user in users]  # Include user ID
         return JsonResponse(user_data, safe=False)
     return JsonResponse([], safe=False)
+
+@login_required
+def check_new_requests(request):
+    friend_requests = FriendshipRequest.objects.filter(to_user=request.user)
+    request_data = [{'from_username': fr.from_user.username, 'request_id': fr.id} for fr in friend_requests]
+
+    return JsonResponse({'new_requests': request_data})
