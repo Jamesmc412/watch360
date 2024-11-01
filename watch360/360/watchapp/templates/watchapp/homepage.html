@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Watch360</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+            color: #1b1b1b;
+        }
+        .header {
+            background-color: #107c10;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 24px; }
+        .header-buttons { display: flex; gap: 10px; }
+        .header-buttons button {
+            background-color: transparent;
+            border: none;
+            color: black;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+        }
+        .header-buttons button:hover {
+            color: white;
+        }
+        .header-buttons button:active {
+            color: white;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: #242424;
+            height: 100vh;
+            position: fixed;
+            top: 79px;
+            left: 0;
+            padding: 10px;
+        }
+        .sidebar h3 { color: white; }
+        .sidebar form input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .sidebar form button {
+            width: 100%;
+            padding: 10px;
+            background-color: #107c10;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .sidebar form button:hover {
+            background-color: #107c10;
+            color: black;
+        }
+        .sidebar form button:active {
+            background-color: #0b4e0b; 
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .top-feature {
+            flex-grow: 1; /* Makes this section take up available space at the top */
+            padding-bottom: 20px;
+        }
+        .friend-section {
+            flex-shrink: 0; /* Keeps this section fixed at the bottom */
+        }
+        .friend-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .friend-card {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .onlineStatusContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .onlineStatus {
+            font-size: 14px;
+            color: #107c10;
+        }
+        .dot {
+            height: 15px;
+            width: 15px;
+            border-radius: 50%;
+            background-color: #bbbbbb;
+            margin-left: 10px;
+        }
+        
+        .friend-card:hover {
+            background-color: #292929;
+        }
+        .friend-card:active {
+            background-color: #404040;
+        }
+        .friend-card h2 { 
+            font-size: 18px; 
+            color: white; 
+            margin-bottom: 5px; 
+        }
+        .friend-card p { 
+            font-size: 14px; 
+            color: #bbb; 
+        }
+        .currently-watching { 
+            color: #ccc; 
+            margin-top: 10px; 
+        }
+
+        /* Chat widget styling */
+        .chat-widget {
+            position: fixed;
+            right: -400px;
+            bottom: 10px;
+            width: 300px;
+            height: 400px;
+            background-color: #f1f1f1;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+        }
+        .chat-header {
+            background-color: #107c10;
+            padding: 10px;
+            color: white;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+            display: flex;              
+            justify-content: space-between; 
+            align-items: center;
+        }
+        .chat-close {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            font-family: Arial, sans-serif;
+            margin-right: 5px;
+        }
+
+        .chat-close:hover {
+            color: black; 
+        }
+        .chat-close:active {
+            color: white; 
+        }
+
+        .chat-body {
+            padding: 10px;
+            overflow-y: auto;
+            height: calc(100% - 100px);
+        }
+        .chat-input {
+            display: flex;
+            padding: 0px;
+            background-color: white;
+            border-radius: 10px;
+        }
+        .chat-input textarea {
+            width: 85%;
+            height: 30px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+            resize: none;
+        }
+        .chat-send-button {
+            width: 15%;
+            background-color: #107c10;
+            color: white;
+            border: white;
+            border-radius: 5px;
+            margin-left: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .chat-send-button:hover {
+            background-color: #107c10; 
+            color: black;
+        }
+        .chat-send-button:active {
+            background-color: #0b4e0b; 
+            color: white;
+        }
+
+        /* Chat bubbles */
+        .chat-bubble {
+            max-width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .chat-bubble.sender {
+            background-color: #107c10;
+            color: white;
+            align-self: flex-end;
+            border-radius: 10px 10px 0 10px;
+        }
+        .chat-bubble.receiver {
+            background-color: #e0e0e0;
+            color: #000;
+            align-self: flex-start;
+            border-radius: 10px 10px 10px 0;
+        }
+        .chat-message-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+         /* Additional CSS for search task-rj */
+         .search-results.show {
+            display: block;
+            align-items: center;         /* Vertically align the button and username */
+            padding: 5px 0; 
+            color: white;
+        }
+        .friend-btn {
+            margin-left: 10px;
+            align-items: center; 
+            background-color: #107c10;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-left: 10px;
+            color: white;
+        }
+        .friend-btn:hover {
+            background-color: rgb(0, 252, 71); /* Add hover effect */
+        }
+        .youtube-search {
+            margin-top: auto;  /* Pushes the form to the bottom */
+        }
+        .youtube-search input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .youtube-search button {
+            width: 100%;
+            padding: 10px;
+            background-color: #107c10;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .video-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .video-card {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .video-card h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .video-card p {
+            font-size: 14px;
+            color: #bbb;
+        }          
+    </style>
+    <!-- Add jQuery for easy AJAX calls - rj -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Watch360</h1>
+        <div class="header-buttons">
+            <button onclick="location.href='{% url 'settings' %}'">Settings</button>
+            <button onclick="location.href='{% url 'logout' %}'">Logout</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h3>Search People</h3>
+        <form id="search-form" onsubmit="return false;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> <!-- Add CSRF token-rj -->
+            <input type="text" id="search-input" placeholder="Search..." required>
+            <button type="submit">Search</button>
+        </form>
+        <div id="search-results" class="search-results">     <!-- search task-rj-->
+            <!-- Autofill results will be injected here -->
+        </div>
+        <div class="youtube-search">
+            <h3>Search YouTube Video</h3>
+            <form id="youtube-search-form">
+                <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+                <button type="submit">Search</button>
+            </form>
+            <p id="video-title" style="margin-top: 10px; color: white;"></p>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- New top feature section -->
+        <div class="top-feature">
+            <h2>Your Recently Added Videos</h2>
+            <div class="video-list">
+                {% if user_videos %}
+                    {% for video in user_videos %}
+                        <div class="video-card">
+                            <h2>{{ video.video_title }}</h2>
+                            <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
+                            <p class="currently-watching">Added on: {{ video.added_at }}</p>
+                            <p>
+                                <a href="{% url 'delete_video' video.id %}" 
+                                onclick="return confirm('Are you sure you want to delete this video?');" 
+                                style="color: red; text-decoration: none;">Delete</a>
+                            </p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>You haven't added any videos yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    
+        <!-- Friend cards at the bottom -->
+        <div class="friend-section">
+            <h2>Your Friends</h2>
+            <div class="friend-list">
+                {% for friend in friends %}
+                    <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                        <h2>{{ friend.username }}</h2>
+                        <div class="onlineStatusContainer">
+                            <p class="onlineStatus">Online:</p>
+                            <span class="dot" id="onlineVisDot"></span> <!-- Placeholder for status -->
+                        </div>
+                        <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" class="chat-widget">
+        <div class="chat-header">
+            <span>Chat with <span id="chat-friend-name">Friend</span></span>
+            <button class="chat-close" onclick="closeChat()">X</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <!-- Messages will be displayed here dynamically -->
+        </div>
+        <div class="chat-input">
+            <textarea id="chat-input-message" placeholder="Type your message..."></textarea>
+            <button id="chat-send-button" class="chat-send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatHistory = {};
+        const chatSocket = new WebSocket("ws://" + window.location.host + "/");
+
+        // WebSocket event listeners
+        chatSocket.onopen = function () {
+            console.log("Connected to WebSocket.");
+        };
+        chatSocket.onclose = function () {
+            console.log("WebSocket connection closed.");
+        };
+
+        // Open chat with a specific friend
+        function openChat(friendName) {
+            document.getElementById('chat-friend-name').textContent = friendName;
+            document.getElementById('chat-widget').style.right = '0px'; // Slide in widget
+            document.getElementById('chat-input-message').value = ''; // Clear input
+
+            if (!chatHistory[friendName]) {
+                chatHistory[friendName] = []; // Initialize chat history
+            }
+            displayChatHistory(friendName);
+        }
+
+        // Close the chat widget
+        function closeChat() {
+            document.getElementById('chat-widget').style.right = '-400px'; // Slide out widget
+        }
+
+        // Display chat history in the chat body
+        function displayChatHistory(friendName) {
+            const chatBody = document.getElementById('chat-body');
+            chatBody.innerHTML = ''; // Clear chat body
+
+            chatHistory[friendName].forEach(msg => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
+                messageDiv.textContent = msg.text;
+                chatBody.appendChild(messageDiv);
+            });
+
+            // Scroll to the bottom of the chat
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Send message via WebSocket
+        document.getElementById('chat-send-button').onclick = function () {
+            sendMessage();
+        };
+
+        document.getElementById('chat-input-message').onkeyup = function (e) {
+            if (e.keyCode === 13) { // Enter key
+                sendMessage();
+            }
+        };
+
+        function sendMessage() {
+            const messageInput = document.getElementById('chat-input-message');
+            const messageText = messageInput.value;
+            const friendName = document.getElementById('chat-friend-name').textContent;
+            const currentTime = new Date().toLocaleTimeString();
+
+            if (messageText) {
+                // Send message through WebSocket
+                chatSocket.send(JSON.stringify({
+                    message: messageText,
+                    username: "{{request.user.username}}",
+                    time: currentTime
+                }));
+
+                // Add message to local chat history
+                chatHistory[friendName].push({ sender: 'me', text: messageText });
+                displayChatHistory(friendName); // Update chat display
+                messageInput.value = ''; // Clear input
+            }
+        }
+
+        // Receive messages from WebSocket
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            const friendName = data.username;
+            const messageContainer = document.getElementById('chat-body');
+            const div = document.createElement('div');
+
+            // Style messages based on sender
+            div.className = (data.username === "{{request.user.username}}") ? 'chat-bubble sender' : 'chat-bubble receiver';
+            div.innerHTML = `<div class="message-content">
+                <span class="message-username">${data.username.charAt(0).toUpperCase() + data.username.slice(1)}</span>
+                <span class="message-text">${data.message}</span>
+                <span class="message-timestamp">${data.time}</span>
+            </div>`;
+
+            messageContainer.appendChild(div);
+            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll
+
+            // Save the message in chat history
+            if (!chatHistory[friendName]) {
+                chatHistory[friendName] = [];
+            }
+            chatHistory[friendName].push({ sender: friendName, text: data.message });
+        };
+
+        // Function to get CSRF token from the form
+        function getCSRFToken() {
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
+        }
+
+        // Function to send friend request via AJAX
+        function sendFriendRequest(userId) {
+            $.ajax({
+                url: '/watchapp/send-request/' + userId + '/',
+                type: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken()
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        alert('Friend request sent!');
+                    } else if (response.status === 'already_friends') {
+                        alert('You are already friends with this user.');
+                    } else if (response.status === 'already_requested') {
+                        alert('Friend request already sent.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Error sending friend request.');
+                }
+            });
+        }
+
+
+        // AJAX logic to handle search input and display results
+        $(document).ready(function() {
+            $('#search-input').on('keyup', function() {
+                var query = $(this).val();
+                var resultsDiv = $('#search-results');
+                
+                if (query.length > 2) {
+                    $.ajax({
+                        url: '{% url "search_users" %}', // Django view that handles search
+                        data: { 'q': query },
+                        dataType: 'json',
+                        success: function(data) {
+                            resultsDiv.empty(); // Clear previous results
+                            if (data.length > 0) {
+                                $.each(data, function(index, user) {
+                                    resultsDiv.append('<div>' + user.username + 
+                                        '<button class="friend-btn" onclick="sendFriendRequest(' + user.id + ')">Add Friend</button></div>');
+                                });
+                                resultsDiv.addClass('show');
+                            } else {
+                                resultsDiv.removeClass('show');
+                            }
+                        }
+                    });
+                } else if (query.length === 0) {  // If input is cleared, hide the results
+                    resultsDiv.empty();           // Clear any displayed results
+                    resultsDiv.removeClass('show'); // Hide the results container
+                }
+            });
+        });
+    </script>
+    <!-- AJAX Script -->
+    <script>
+    document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent default form behavior
+
+        const url = document.getElementById('youtube-url').value;
+        const csrfToken = '{{ csrf_token }}'; // CSRF token for security
+
+        try {
+            const response = await fetch("{% url 'search_video' %}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ youtube_url: url })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('video-title').innerText = 
+                    data.title ? `Video Title: ${data.title}` : 'Title not found.';
+
+                setTimeout(() => {
+                    location.reload(); // Reload the page to reflect changes
+                }, 1000);
+            } else {
+                document.getElementById('video-title').innerText = 'Error fetching video title.';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('video-title').innerText = 'An error occurred.';
+        }
+    });
+
+    let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+
+    async function pollVideoStatus() {
+        try {
+            const response = await fetch("{% url 'check_videos_status' %}");
+            const data = await response.json();
+            const currentVideoCount = data.video_count;
+
+            if (currentVideoCount < previousVideoCount) {
+                location.reload();
+            }
+        } catch (error) {
+            console.error("Error checking video status:", error);
+        }
+    }
+
+    setInterval(pollVideoStatus, 10000);
+    </script>
+
+</body>
+</html>
+
