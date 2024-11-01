@@ -202,10 +202,6 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-def homepage(request):
-    videos = YouTubeData.objects.all().order_by('-timestamp')  # Get all videos sorted by latest
-    return render(request, 'watchapp/homepage.html', {'videos': videos})
-
 def logout_view(request):
     # Clear the session data
     request.session.flush()
