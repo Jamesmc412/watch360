@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Title</title>
+</head>
+<body>
+    <h1>Video Title Result</h1>
+    {% if video_title %}
+        <p>The title of the video is: <strong>{{ video_title }}</strong></p>
+    {% elif error %}
+        <p>Error: {{ error }}</p>
+    {% endif %}
+    <a href="{% url 'home' %}">Search again</a>
+</body>
+</html>
