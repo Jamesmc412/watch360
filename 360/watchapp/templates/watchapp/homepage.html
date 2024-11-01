@@ -19,6 +19,23 @@
             align-items: center;
         }
         .header h1 { font-size: 24px; }
+        .header h2 {
+            margin: auto;
+            font-size: 24px;
+            color: white;
+        }
+        .header span{
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        .offline {
+            background-color: #bbbbbb;
+        }
+        .online {
+            background-color: #2ca243;
+        }
         .header-buttons { display: flex; gap: 10px; }
         .header-buttons button {
             background-color: transparent;
@@ -104,7 +121,7 @@
             font-size: 14px;
             color: #107c10;
         }
-        .dot {
+        .dot2 {
             height: 15px;
             width: 15px;
             border-radius: 50%;
@@ -263,6 +280,9 @@
 
     <div class="header">
         <h1>Watch360</h1>
+        <h2>Hello {{user.username}} &nbsp; 
+            <span class="dot" id="onlineVisDot"></span>
+        </h2>
         <div class="header-buttons">
             <button onclick="location.href='{% url 'settings' %}'">Settings</button>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
@@ -297,7 +317,7 @@
                         <h2>{{ friend.username }}</h2>
                         <div class="onlineStatusContainer">
                             <p class="onlineStatus">Online:</p>
-                            <span class="dot" id="onlineVisDot"></span> <!-- Placeholder for status -->
+                            <span class="dot2" id="friendVisDot"></span> <!-- Placeholder for status -->
                         </div>
                         <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
                     </div>
@@ -483,8 +503,25 @@
             });
         });
     </script>
+    <script>
+        const onlineVis = document.getElementById('onlineVisDot');
 
+        // Function to update span class based on saved checkbox state
+        function updateSpanClass() {
+            const isChecked = localStorage.getItem('isOnline') === 'true';
+            
+            if (isChecked) {
+                onlineVis.classList.add('online');
+                onlineVis.classList.remove('offline');
+            } else {
+                onlineVis.classList.add('offline');
+                onlineVis.classList.remove('online');
+            }
+        }
 
+        // this checks the status of the isOnline every second
+        setInterval(updateSpanClass, 1000);
+    </script>
 </body>
 </html>
 
