@@ -52,6 +52,22 @@
         .header-buttons button:active {
             color: white;
         }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 200px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 10px;
+            top: 50px;
+        }
+        .dropdown-content p {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
 
         .sidebar {
             width: 200px;
@@ -284,9 +300,26 @@
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
+            <button id="notifications-button">Notifications</button>
             <button onclick="location.href='{% url 'settings' %}'">Settings</button>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
+    </div>
+    <!-- Dropdown widget -->
+    <div id="notifications-dropdown" class="dropdown-content">
+        {% if pending_requests %}
+            <ul>
+                {% for request in pending_requests %}
+                    <li>
+                        {{ request.username }} sent you a friend request.
+                        <button onclick="acceptFriendRequest({{ request.id }})">Accept</button>
+                        <button onclick="rejectFriendRequest({{ request.id }})">Reject</button>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No new notifications</p>
+        {% endif %}
     </div>
 
     <div class="sidebar">
@@ -521,6 +554,60 @@
 
         // this checks the status of the isOnline every second
         setInterval(updateSpanClass, 1000);
+    </script>
+    
+    <script>
+        // script to generate notifications dropdown menu generated from copilot
+
+        $(document).ready(function() {
+            $('#notifications-button').click(function() {
+                $('#notifications-dropdown').toggle();
+            });
+    
+            // Close the dropdown if the user clicks outside of it
+            $(window).click(function(event) {
+                if (!event.target.matches('#notifications-button')) {
+                    var dropdowns = $('.dropdown-content');
+                    dropdowns.each(function() {
+                        if ($(this).is(':visible')) {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+        });
+        function acceptFriendRequest(requestId) {
+            $.ajax({
+                url: '{% url "accept_friend_request" request_id=0 %}'.replace('0', requestId),
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+        function rejectFriendRequest(requestId) {
+            $.ajax({
+                url: '{% url "reject_friend_request" request_id=0 %}'.replace('0', requestId),
+                type: 'POST',
+                data: {
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    if (response.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }  
     </script>
 </body>
 </html>

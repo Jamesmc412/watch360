@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
@@ -54,7 +55,6 @@ def register_view(request):
             user = User.objects.create_user(
                 username=username, password=password, 
                 first_name=first_name, last_name=last_name)
-            messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
     return render(request, 'watchapp/register.html', {'error': error})
@@ -63,10 +63,18 @@ def homepage_view(request):
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(request.user)
 
+    # Get all pending friend requests
+    pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
+    # Create a list of pending friend requests
+    pending_requests_data = [{'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+    
     # Create a list of usernames from the friends queryset
     friends_data = [{'username': friend.username} for friend in friends]
 
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+    return render(request, 'watchapp/homepage.html', {
+        "friends": friends_data,
+        "pending_requests": pending_requests_data
+    })
 
 def logout_view(request):
     # Clear the session data
@@ -134,15 +142,20 @@ def send_friend_request(request, user_id):
 
 # View to accept a friend request
 @login_required
+@require_POST
 def accept_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
-    
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to accept this request.")
-    
-    # Accept the request
-    friend_request.accept()
-    return redirect('user_list')
+    try:
+        print(f"Attempting to accept friend request with ID: {request_id}")
+        pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
+        print(f"Pending requests for {request.user.username}: {[req.id for req in pending_requests]}")
+        
+        friend_request = FriendshipRequest.objects.get(id=request_id, to_user=request.user)
+        friend_request.accept()
+        print("Friend request accepted successfully")
+        return JsonResponse({'status': 'success'})
+    except FriendshipRequest.DoesNotExist:
+        print("Friend request does not exist")
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 
 # View to reject a friend request
 @login_required
