@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
@@ -157,6 +157,9 @@ def result(request):
             return render(request, 'watchapp/result.html', {'error': 'Could not retrieve the page.'})
     return render(request, 'watchapp/homepage.html')
 
+def chat_view(request):
+    return render(request, 'chat.html')
+
 def login_view(request):
     error = None
     if request.method == 'POST':
@@ -201,6 +204,16 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
+def homepage_view(request):
+    # Get all friends of the logged-in user
+    friends = Friend.objects.friends(request.user)
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username} for friend in friends]
+
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+
+
 def logout_view(request):
     # Clear the session data
     request.session.flush()
@@ -229,9 +242,6 @@ def settings_view(request):
         return redirect('login')
 
     return render(request, 'watchapp/settings.html', {'user': user})
-
-def chat_view(request):
-    return render(request, 'chat.html')
 
 # View to display all users
 @login_required
