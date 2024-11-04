@@ -1,61 +1,27 @@
-// const settingsData = [
-//     {
-//         title: 'Online/Offline Visibility',
-//         uid: 'onlineOfflineVisibility',
-//         description: 'Allow friends to be able to see whether or not you are online',
-//         isChecked: false,
-//         type: checkbox
-//     },
-//     {
-//         title: 'Light/Dark Mode',
-//         uid: 'lightDarkMode',
-//         description: 'Set the app to a Light Theme or Dark Theme',
-//         isChecked: true,
-//         type: checkbox
-//     },
-//     {
-//         title: 'Change Your Username',
-//         uid: 'changeUsername',
-//         description: 'Alter your current username to a new one',
-//         isChecked: false,
-//         type: text
-//     },
-//     {
-//         title: 'Change Your Password',
-//         uid: 'changePassword',
-//         description: 'Alter your current password to a new one',
-//         isChecked: false,
-//         type: text
-//     }
-// ];
-
 const settingsPanel = document.getElementById('SettingsPanel');
-// settingsData.forEach(setting => {
-//     createSetting(setting);
-// });
+const bodyBG = document.body.style;
+const lightDarkMode = document.getElementById('lightDarkMode');
+const isOnline = document.getElementById('onlineOffline');
 
-// function createSetting(data){
-//     const settings = document.getElementById('Settings');
-//     settings.innerHTML += `
-//     <div class="setting">
-//         <label for="${data.uid}">
-//             <span>${data.title}</span>
-//             <span>${data.description}</span>
-//         </label>
-//         <input type="${data.type}" id="${data.uid}">
-//     </div>
-//     `
-// }
+// Code specific to the first HTML file
+lightDarkMode.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        settingsPanel.classList.add('dark');
+        bodyBG.backgroundColor = 'black';
+    } else {
+        settingsPanel.classList.remove('dark');
+        bodyBG.backgroundColor = 'white';
+    }
+});
 
-if(document.getElementById('lightDarkMode')){
-    document.getElementById('lightDarkMode').addEventListener('change', e => {
-        const bodyBG = document.body.style;
-        if (e.target.checked){
-            settingsPanel.classList.add('dark');
-            bodyBG.backgroundColor = 'black';
-        } else {
-            settingsPanel.classList.remove('dark');
-            bodyBG.backgroundColor = 'white';
-        }
-    });
-}
+// Set the initial state of isOnline checkbox on page load
+document.addEventListener('DOMContentLoaded', () => {
+    const isChecked = localStorage.getItem('checkboxState') === 'true';
+    isOnline.checked = isChecked;
+});
+
+// Save the checkbox state when it changes
+isOnline.addEventListener('change', () => {
+    localStorage.setItem('checkboxState', isOnline.checked.toString());
+    localStorage.setItem('isOnline', isOnline.checked.toString());
+});

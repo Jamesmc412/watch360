@@ -90,21 +90,13 @@ def search_video(request):
 
 
 @login_required
-def homepage_view(request):
+def home_view(request):
     # Retrieve only the videos for the currently logged-in user
     user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
 
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
-
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
     context = {
         'user_videos': user_videos,
-        'friends': friends_data,
     }
-    
     return render(request, 'watchapp/homepage.html', context)
 
 # Background task to delete video after the duration
@@ -201,15 +193,11 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-<<<<<<< Updated upstream:360/watchapp/views.py
-=======
-    return render(request, 'watchapp/register.html', {'error': error})
 
 def homepage(request):
     videos = YouTubeData.objects.all().order_by('-timestamp')  # Get all videos sorted by latest
     return render(request, 'watchapp/homepage.html', {'videos': videos})
 
->>>>>>> Stashed changes:watch360/360/watchapp/views.py
 def logout_view(request):
     # Clear the session data
     request.session.flush()
