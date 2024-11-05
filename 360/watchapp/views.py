@@ -160,6 +160,7 @@ def result(request):
 def chat_view(request):
     return render(request, 'chat.html')
 
+
 def login_view(request):
     error = None
     if request.method == 'POST':
@@ -212,7 +213,6 @@ def homepage_view(request):
     friends_data = [{'username': friend.username} for friend in friends]
 
     return render(request, 'watchapp/homepage.html', {"friends": friends_data})
-
 
 def logout_view(request):
     # Clear the session data

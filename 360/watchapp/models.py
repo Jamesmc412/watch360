@@ -11,3 +11,5 @@ class YouTubeData(models.Model):
     def __str__(self):
         return self.video_title
 
+
+# Create your models here.

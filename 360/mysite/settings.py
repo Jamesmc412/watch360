@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'channels',
     'friendship',
     'background_task',
+
 ]
 
 
@@ -60,7 +61,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],  # Include project-level templates
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -135,3 +136,4 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',  # Local testing
     },
 }
+
