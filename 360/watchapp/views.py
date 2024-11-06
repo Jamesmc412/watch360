@@ -10,6 +10,11 @@ from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django import forms
+from django.contrib.auth.models import User
+from .models import Profile
 
 def chat_view(request):
     return render(request, 'chat.html')
@@ -174,3 +179,44 @@ def search_users(request):
         user_data = [{'id': user.id, 'username': user.username} for user in users]  # Include user ID
         return JsonResponse(user_data, safe=False)
     return JsonResponse([], safe=False)
+
+# views.py
+class MyProfile(LoginRequiredMixin, View):
+    def get(self, request):
+        user_form = ProfileUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+        
+        context = {
+            'user_form': user_form,
+            'profile_form': profile_form
+        }
+        
+        return render(request, 'watchapp/profile.html', context)
+    
+    def post(self, request):
+        user_form = ProfileUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated successfully')
+            return redirect('profile')
+        else:
+            context = {
+                'user_form': user_form,
+                'profile_form': profile_form
+            }
+            messages.error(request, 'Error updating your profile')
+            return render(request, 'watchapp/profile.html', context)
+
+        
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio']  # Include the bio field here
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar']  # Include additional profile fields if needed

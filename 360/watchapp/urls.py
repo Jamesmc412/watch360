@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, register_view, homepage_view, settings_view, logout_view, chat_view
+from .views import login_view, register_view, homepage_view, settings_view, logout_view, chat_view, MyProfile
 from . import views
 
 urlpatterns = [
@@ -16,4 +16,5 @@ urlpatterns = [
     path('accept-request/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
     path('reject-request/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
     path('unfriend/<int:user_id>/', views.unfriend, name='unfriend'),
+    path('profile/', MyProfile.as_view(), name='profile'),
 ]
