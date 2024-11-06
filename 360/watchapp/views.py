@@ -66,7 +66,7 @@ def homepage_view(request):
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
     # Create a list of pending friend requests
-    pending_requests_data = [{'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+    pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
     
     # Create a list of usernames from the friends queryset
     friends_data = [{'username': friend.username} for friend in friends]
@@ -75,7 +75,6 @@ def homepage_view(request):
         "friends": friends_data,
         "pending_requests": pending_requests_data
     })
-
 def logout_view(request):
     # Clear the session data
     request.session.flush()
@@ -142,32 +141,34 @@ def send_friend_request(request, user_id):
 
 # View to accept a friend request
 @login_required
-@require_POST
 def accept_friend_request(request, request_id):
     try:
-        print(f"Attempting to accept friend request with ID: {request_id}")
-        pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
-        print(f"Pending requests for {request.user.username}: {[req.id for req in pending_requests]}")
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
         
-        friend_request = FriendshipRequest.objects.get(id=request_id, to_user=request.user)
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to accept this request.")
+        
+        # Accept the request
         friend_request.accept()
-        print("Friend request accepted successfully")
-        return JsonResponse({'status': 'success'})
+        return redirect('homepage')  # Redirect to the homepage
+    
     except FriendshipRequest.DoesNotExist:
-        print("Friend request does not exist")
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
-
 # View to reject a friend request
 @login_required
 def reject_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    try:
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+        
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to reject this request.")
+        
+        # Reject the request
+        friend_request.reject()
+        return redirect('homepage')  # Redirect to the homepage
     
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to reject this request.")
-    
-    # Reject the request
-    friend_request.reject()
-    return redirect('user_list')
+    except FriendshipRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 
 # View to unfriend someone
 @login_required
