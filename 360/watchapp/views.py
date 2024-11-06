@@ -152,9 +152,9 @@ def result(request):
             video_title = title['content'] if title else 'Title not found'
 
             # Pass the title to the template
-            return render(request, 'watchapp/result.html', {'video_title': video_title})
+            return render(request, 'watchapp/homepage.html', {'video_title': video_title})
         else:
-            return render(request, 'watchapp/result.html', {'error': 'Could not retrieve the page.'})
+            return render(request, 'watchapp/homepage.html', {'error': 'Could not retrieve the page.'})
     return render(request, 'watchapp/homepage.html')
 
 def chat_view(request):
@@ -204,15 +204,6 @@ def register_view(request):
             return redirect('login')
 
     return render(request, 'watchapp/register.html', {'error': error})
-
-def homepage_view(request):
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
-
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
 
 def logout_view(request):
     # Clear the session data
