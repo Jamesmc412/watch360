@@ -16,6 +16,7 @@
 
         /* Card styling */
         .card {
+            position: relative; /* Make the card a positioned element for absolute positioning */
             background-color: #ffffff;
             padding: 2rem;
             border-radius: 10px;
@@ -94,14 +95,35 @@
         .btn:hover {
             background-color: #0b4e0b;
         }
+        .go-back-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #107c10;
+            color: #ffffff;
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .go-back-button:hover {
+            background-color: #0b4e0b;
+}
+       
+
     </style>
 </head>
 <body>
 
+
 <div class="center">
     <form method="POST" enctype="multipart/form-data" class="card">
         {% csrf_token %}
-        
+        <!-- Go Back Button inside the card -->
+        <a href="{% url 'homepage' %}" class="go-back-button">Exit</a>
+
         {% if user.profile %}
             <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar"/>
         {% endif %}
@@ -119,6 +141,7 @@
         <input type="file" name="avatar" id="avatar" accept=".jpg,.jpeg,.png">
         
         <button type="submit" class="btn">Update Profile</button>
+    
     </form>
 </div>
 

@@ -13,7 +13,8 @@
         }
         .header {
             background-color: #107c10;
-            padding: 10px 20px;
+            height: 40px; /* Set a specific height */
+            padding: 20px 20px; /* Increase padding to make it taller */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -272,14 +273,45 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
+        
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+        }
+        .avatar-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .profile-section span {
+            white-space: nowrap; /* Prevents line breaks */
+            color: black;
+            font-size: 16px;
+            font-weight: bold;
+            transition: color 0.3s ease; /* Smooth transition */
+        }
+
+        .profile-section:hover span {
+         color: white;
+        }
+
+
+
     </style>
     <!-- Add jQuery for easy AJAX calls - rj -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
+    
+    
     <div class="header">
-        <h1>Watch360</h1>
+        <!-- Profile section in place of Watch360 title -->
+        <div class="profile-section" onclick="window.location.href='{% url 'profile' %}'" style="cursor: pointer;">
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
+            <span>{{ user.username }}</span>
+        </div>
         <h2>Hello {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
