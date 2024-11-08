@@ -275,27 +275,39 @@
         }
         
 
+        
         .profile-section {
+            white-space: nowrap; /* Prevents line breaks */
             display: flex;
             align-items: center;
+            padding: 5px; /* Adjust padding if needed */
         }
+
         .avatar-icon {
-            width: 30px;
-            height: 30px;
+            width: 35px; /* Slightly increase the size if needed */
+            height: 35px; /* Match height with width */
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px; /* Space between image and text */
+            object-fit: cover; /* Ensures the image fits within the circle without distortion */
         }
-        .profile-section span {
-            white-space: nowrap; /* Prevents line breaks */
-            color: black;
-            font-size: 16px;
-            font-weight: bold;
-            transition: color 0.3s ease; /* Smooth transition */
-        }
+
 
         .profile-section:hover span {
          color: white;
         }
+        .friend-avatar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .friend-avatar {
+            width: 40px; /* Adjust the size as needed */
+            height: 40px;
+            border-radius: 50%; /* Makes the image circular */
+            object-fit: cover; /* Ensures the image fills the circle without distortion */
+        }
+
 
 
 
@@ -312,7 +324,7 @@
             <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
             <span>{{ user.username }}</span>
         </div>
-        <h2>Hello {{user.username}} &nbsp; 
+        <h2>Hello, {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
@@ -346,6 +358,9 @@
             <div class="friend-list">
                 {% for friend in friends %}
                     <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                        <div class="friend-avatar-container">
+                            <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                        </div>
                         <h2>{{ friend.username }}</h2>
                         <div class="onlineStatusContainer">
                             <p class="onlineStatus">Online:</p>

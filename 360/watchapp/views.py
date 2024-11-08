@@ -69,7 +69,8 @@ def homepage_view(request):
     friends = Friend.objects.friends(request.user)
 
     # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
+    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
+
 
     return render(request, 'watchapp/homepage.html', {"friends": friends_data})
 
