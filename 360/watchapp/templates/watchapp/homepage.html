@@ -13,7 +13,8 @@
         }
         .header {
             background-color: #107c10;
-            padding: 10px 20px;
+            height: 40px; /* Set a specific height */
+            padding: 20px 20px; /* Increase padding to make it taller */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -272,6 +273,44 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
+
+        
+
+        
+        .profile-section {
+            white-space: nowrap; /* Prevents line breaks */
+            display: flex;
+            align-items: center;
+            padding: 5px; /* Adjust padding if needed */
+        }
+
+        .avatar-icon {
+            width: 35px; /* Slightly increase the size if needed */
+            height: 35px; /* Match height with width */
+            border-radius: 50%;
+            margin-right: 8px; /* Space between image and text */
+            object-fit: cover; /* Ensures the image fits within the circle without distortion */
+        }
+
+
+        .profile-section:hover span {
+         color: white;
+        }
+        .friend-avatar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .friend-avatar {
+            width: 40px; /* Adjust the size as needed */
+            height: 40px;
+            border-radius: 50%; /* Makes the image circular */
+            object-fit: cover; /* Ensures the image fills the circle without distortion */
+        }
+
+
+
         .youtube-search {
             margin-top: auto;  /* Pushes the form to the bottom */
         }
@@ -310,15 +349,21 @@
             font-size: 14px;
             color: #bbb;
         }          
+
     </style>
     <!-- Add jQuery for easy AJAX calls - rj -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
+    
+    
     <div class="header">
-        <h1>Watch360</h1>
-        <h2>Hello {{user.username}} &nbsp; 
+        <!-- Profile section in place of Watch360 title -->
+        <div class="profile-section" onclick="window.location.href='{% url 'profile' %}'" style="cursor: pointer;">
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
+            <span>{{ user.username }}</span>
+        </div>
+        <h2>Hello, {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
@@ -377,6 +422,9 @@
             <div class="friend-list">
                 {% for friend in friends %}
                     <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                        <div class="friend-avatar-container">
+                            <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                        </div>
                         <h2>{{ friend.username }}</h2>
                         <div class="onlineStatusContainer">
                             <p class="onlineStatus">Online:</p>

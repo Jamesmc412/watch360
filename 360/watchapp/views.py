@@ -23,6 +23,11 @@ from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django import forms
+from django.contrib.auth.models import User
+from .models import Profile
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -205,6 +210,18 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
+
+def homepage_view(request):
+    # Get all friends of the logged-in user
+    friends = Friend.objects.friends(request.user)
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
+
+
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+
+
 def logout_view(request):
     # Clear the session data
     request.session.flush()
@@ -311,3 +328,39 @@ def search_users(request):
         user_data = [{'id': user.id, 'username': user.username} for user in users]  # Include user ID
         return JsonResponse(user_data, safe=False)
     return JsonResponse([], safe=False)
+
+# views.py
+class MyProfile(LoginRequiredMixin, View):
+    def get(self, request):
+        user_form = ProfileUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+        
+        context = {
+            'user_form': user_form,
+            'profile_form': profile_form
+        }
+        
+        return render(request, 'watchapp/profile.html', context)
+    
+    def post(self, request):
+        user_form = ProfileUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated successfully')
+            return redirect('profile')
+        else:
+            context = {
+                'user_form': user_form,
+                'profile_form': profile_form
+            }
+            messages.error(request, 'Error updating your profile')
+            return render(request, 'watchapp/profile.html', context)
+
+        
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio']  # Include the bio field here
