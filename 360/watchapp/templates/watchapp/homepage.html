@@ -273,6 +273,7 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
+
         
 
         
@@ -310,6 +311,44 @@
 
 
 
+        .youtube-search {
+            margin-top: auto;  /* Pushes the form to the bottom */
+        }
+        .youtube-search input {
+            width: 90%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .youtube-search button {
+            width: 100%;
+            padding: 10px;
+            background-color: #107c10;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .video-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .video-card {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .video-card h2 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+        .video-card p {
+            font-size: 14px;
+            color: #bbb;
+        }          
 
     </style>
     <!-- Add jQuery for easy AJAX calls - rj -->
@@ -343,13 +382,38 @@
         <div id="search-results" class="search-results">     <!-- search task-rj-->
             <!-- Autofill results will be injected here -->
         </div>
+        <div class="youtube-search">
+            <h3>Search YouTube Video</h3>
+            <form id="youtube-search-form">
+                <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+                <button type="submit">Search</button>
+            </form>
+            <p id="video-title" style="margin-top: 10px; color: white;"></p>
+        </div>
     </div>
 
     <div class="main-content">
         <!-- New top feature section -->
         <div class="top-feature">
-            <h2>Top Feature</h2>
-            <!-- Your content for the top half goes here -->
+            <h2>Your Recently Added Videos</h2>
+            <div class="video-list">
+                {% if user_videos %}
+                    {% for video in user_videos %}
+                        <div class="video-card">
+                            <h2>{{ video.video_title }}</h2>
+                            <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
+                            <p class="currently-watching">Added on: {{ video.added_at }}</p>
+                            <p>
+                                <a href="{% url 'delete_video' video.id %}" 
+                                onclick="return confirm('Are you sure you want to delete this video?');" 
+                                style="color: red; text-decoration: none;">Delete</a>
+                            </p>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>You haven't added any videos yet.</p>
+                {% endif %}
+            </div>
         </div>
     
         <!-- Friend cards at the bottom -->
@@ -550,6 +614,60 @@
             });
         });
     </script>
+    <!-- AJAX Script -->
+    <script>
+    document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
+        event.preventDefault(); // Prevent default form behavior
+
+        const url = document.getElementById('youtube-url').value;
+        const csrfToken = '{{ csrf_token }}'; // CSRF token for security
+
+        try {
+            const response = await fetch("{% url 'search_video' %}", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify({ youtube_url: url })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('video-title').innerText = 
+                    data.title ? `Video Title: ${data.title}` : 'Title not found.';
+
+                setTimeout(() => {
+                    location.reload(); // Reload the page to reflect changes
+                }, 1000);
+            } else {
+                document.getElementById('video-title').innerText = 'Error fetching video title.';
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('video-title').innerText = 'An error occurred.';
+        }
+    });
+
+    let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+
+    async function pollVideoStatus() {
+        try {
+            const response = await fetch("{% url 'check_videos_status' %}");
+            const data = await response.json();
+            const currentVideoCount = data.video_count;
+
+            if (currentVideoCount < previousVideoCount) {
+                location.reload();
+            }
+        } catch (error) {
+            console.error("Error checking video status:", error);
+        }
+    }
+
+    setInterval(pollVideoStatus, 10000);
+    </script>
+
     <script>
         const onlineVis = document.getElementById('onlineVisDot');
 

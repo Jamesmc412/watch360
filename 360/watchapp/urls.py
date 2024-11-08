@@ -5,9 +5,12 @@ from . import views
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
-    path('', homepage_view, name='homepage'), 
+    path('', homepage_view, name='homepage'),  # Matches 'homepage'
     path('settings/', settings_view, name='settings'),
     path('logout/', logout_view, name='logout'),
+    path('search_video/', views.search_video, name='search_video'),
+    path('delete/<int:video_id>/', views.delete_video, name='delete_video'),
+    path('check-videos-status/', views.check_videos_status, name='check_videos_status'),
     path('chat/', chat_view, name='chat'),
     path('search/', views.search_users, name='search_users'),    # search task-rj
     #testing django-friendship
@@ -18,3 +21,4 @@ urlpatterns = [
     path('unfriend/<int:user_id>/', views.unfriend, name='unfriend'),
     path('profile/', MyProfile.as_view(), name='profile'),
 ]
+

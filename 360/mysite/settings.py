@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'channels',
     'friendship',
+    'background_task',
+
 ]
 
 
@@ -135,6 +137,6 @@ CHANNEL_LAYERS = {
     },
 }
 
-
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
+
