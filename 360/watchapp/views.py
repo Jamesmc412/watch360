@@ -7,10 +7,156 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
+from bs4 import BeautifulSoup
+from django.http import JsonResponse
+import requests
+import json
+from .models import YouTubeData
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from datetime import timedelta
+from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
+from django.db.models import F
+from datetime import timedelta
+from background_task import background
 from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
+
+def get_video_data(video_url):
+    """Fetch video title and duration from YouTube API."""
+    try:
+        video_id = video_url.split('v=')[1].split('&')[0] if 'v=' in video_url else None
+        if not video_id:
+            return None, None, "Invalid YouTube URL"
+
+        api_key = 'AIzaSyB0ck1zWAO-20vOaNRdgYu7-yTNCS0jtZE'  # Replace with your API key
+        endpoint = f'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={video_id}&key={api_key}'
+        
+        response = requests.get(endpoint)
+        response.raise_for_status()
+        
+        data = response.json()
+        if data['items']:
+            video_title = data['items'][0]['snippet']['title']
+            duration = data['items'][0]['contentDetails']['duration']
+            duration_seconds = convert_duration_to_seconds(duration)
+            return video_title, duration_seconds, None
+        return None, None, "Video not found"
+
+    except Exception as e:
+        print(f"Error fetching video data: {e}")
+        return None, None, "Could not retrieve video data"
+    
+    
+@csrf_exempt  # Ensure AJAX requests work
+@login_required
+def search_video(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            video_url = data.get("youtube_url")
+
+            if not video_url:
+                return JsonResponse({'error': 'YouTube URL is required'}, status=400)
+
+            # Get video data (title and duration)
+            video_title, duration, error = get_video_data(video_url)
+            if error:
+                return JsonResponse({'error': error}, status=400)
+
+            # Delete previous videos of this user
+            YouTubeData.objects.filter(user=request.user).delete()
+
+            # Save the new video data
+            new_video = YouTubeData.objects.create(
+                user=request.user,
+                video_url=video_url,
+                video_title=video_title,
+                duration=duration
+            )
+
+            # Schedule deletion based on video duration
+            delete_video_task(new_video.id, schedule=timedelta(seconds=duration))
+
+            # Return success response
+            return JsonResponse({'message': 'Video scheduled for deletion', 'title': video_title})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+@login_required
+def homepage_view(request):
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
+
+    # Get all friends of the logged-in user
+    friends = Friend.objects.friends(request.user)
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username} for friend in friends]
+
+    context = {
+        'user_videos': user_videos,
+        'friends': friends_data,
+    }
+    
+    return render(request, 'watchapp/homepage.html', context)
+
+# Background task to delete video after the duration
+@background
+def delete_video_task(video_id):
+    try:
+        video = YouTubeData.objects.get(id=video_id)
+        video.delete()
+        print(f"Video {video_id} deleted after its duration.")
+    except YouTubeData.DoesNotExist:
+        print(f"Video {video_id} not found.")
+
+        
+@login_required
+def check_videos_status(request):
+    video_count = YouTubeData.objects.filter(user=request.user).count()
+    return JsonResponse({'video_count': video_count})
+
+@login_required
+def delete_video(request, video_id):
+    video = get_object_or_404(YouTubeData, id=video_id, user=request.user)
+    video.delete()  # Delete immediately when requested from the UI
+    return redirect('homepage')
+    
+def convert_duration_to_seconds(duration):
+    """Convert ISO 8601 duration to seconds."""
+    import isodate  # Make sure the 'isodate' library is installed
+    try:
+        return int(isodate.parse_duration(duration).total_seconds())
+    except Exception:
+        return 0  # If conversion fails, return 0 seconds
+
+def result(request):
+    """Scrape the YouTube page for the video title."""
+    if request.method == 'POST':
+        youtube_url = request.POST.get('youtube_url')
+
+        # Make a request to the YouTube page
+        response = requests.get(youtube_url)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Extract the video title
+            title = soup.find('meta', property='og:title')
+            video_title = title['content'] if title else 'Title not found'
+
+            # Pass the title to the template
+            return render(request, 'watchapp/homepage.html', {'video_title': video_title})
+        else:
+            return render(request, 'watchapp/homepage.html', {'error': 'Could not retrieve the page.'})
+    return render(request, 'watchapp/homepage.html')
 
 def chat_view(request):
     return render(request, 'chat.html')
