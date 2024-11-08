@@ -65,17 +65,7 @@ def homepage_view(request):
 
     # Create a list of usernames from the friends queryset
     friends_data = [{'username': friend.username} for friend in friends]
-
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
-
-def logout_view(request):
-    # Clear the session data
-    request.session.flush()
-    # Redirect to the login page
-    return redirect('login')
-
-@login_required
-def settings_view(request):
+    
     user = request.user  # Get the logged-in user
 
     if request.method == 'POST':
@@ -92,10 +82,15 @@ def settings_view(request):
             update_session_auth_hash(request, user)  # Keep user logged in after password change
 
         user.save()
-        messages.success(request, 'Settings updated successfully!')
         return redirect('login')
 
-    return render(request, 'watchapp/settings.html', {'user': user})
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+
+def logout_view(request):
+    # Clear the session data
+    request.session.flush()
+    # Redirect to the login page
+    return redirect('login')
 
 # View to display all users
 @login_required

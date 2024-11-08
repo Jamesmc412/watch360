@@ -1,12 +1,12 @@
 from django.urls import path
-from .views import login_view, register_view, homepage_view, settings_view, logout_view, chat_view
+from .views import login_view, register_view, homepage_view, logout_view, chat_view
 from . import views
 
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     path('', homepage_view, name='homepage'), 
-    path('settings/', settings_view, name='settings'),
+    # path('settings/', settings_view, name='settings'),
     path('logout/', logout_view, name='logout'),
     path('chat/', chat_view, name='chat'),
     path('search/', views.search_users, name='search_users'),    # search task-rj
