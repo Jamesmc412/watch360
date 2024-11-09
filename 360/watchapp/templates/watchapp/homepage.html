@@ -3,18 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/gotham-rounded">
     <title>Watch360</title>
     <style>
+        /* Define light and dark mode color variables */
+        :root {
+            --bg-color: #ffffff;
+            --panel-bg: #107c10;
+            --navbar-bg: #333;
+            --text-color: #333;
+            --input-bg-color: #ffffff;
+            --button-color: #0e7a0d;
+            --hover-bg: #ddd;
+            --checkbox-bg-unchecked: #d9d9d9;
+            --checkbox-bg-checked: #000000;
+            --settings-dropdown-bg: #0e7a0d;
+            --settings-dropdown-text-color: #ffffff;
+            --input-color: var(--text-color);
+        }
+
+        /* Dark mode overrides */
+        body.dark-mode {
+            --bg-color: #000000;
+            --panel-bg: #000000;
+            --navbar-bg: #111;
+            --text-color: #2ca243;
+            --input-bg-color: #222;
+            --button-color: #2ca243;
+            --hover-bg: #444;
+            --checkbox-bg-unchecked: #677176;
+            --checkbox-bg-checked: #000000;
+            --input-color: #ffffff;
+        }
+
+        /* Apply colors across the page */
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #1b1b1b;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: "Gotham Rounded", sans-serif;
         }
         .header {
-            background-color: #107c10;
-            height: 40px; /* Set a specific height */
-            padding: 20px 20px; /* Increase padding to make it taller */
+            position: relative;
+            background-color: var(--panel-bg);
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -41,19 +74,125 @@
         .header-buttons button {
             background-color: transparent;
             border: none;
-            color: black;
+            color: white;
             cursor: pointer;
+            font-family: inherit;
             font-size: 18px;
             display: flex;
             align-items: center;
         }
-        .header-buttons button:hover {
-            color: white;
-        }
-        .header-buttons button:active {
-            color: white;
+
+        .settings-dropdown {
+            float: left;
+            overflow: hidden;
         }
 
+        .settings-dropdown .dropbtn {
+            cursor: pointer;
+            font-size: 18px;  
+            border: none;
+            outline: none;
+            color: white;
+            padding: 14px 16px;
+            background-color: transparent;
+            font-family: inherit;
+            margin: 0;
+        }
+
+        .settings-dropdown .dropbtn:hover, 
+        .header-buttons button:hover {
+            background-color: var(--checkbox-bg-unchecked);
+            color: var(--checkbox-bg-checked);
+        }
+
+
+        /* Dropdown Content Styling */
+        .dropdown-content {
+            background-color: var(--settings-dropdown-bg);
+            display: none;
+            position: absolute;
+            width: 500px;
+            border-radius: 8px;
+            padding: 10px 0;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            right: 0;
+            color: var(--settings-dropdown-text-color);
+        }
+        
+        /* Dark mode styles specific to dropdown */
+        .dropdown-content.dark {
+            background-color: #333;
+            color: #2ca243;
+        }
+
+        .setting {
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .setting label span {
+            color: var(--text-color);
+            font-weight: 500;
+            margin-right: 10px;
+        }
+
+        .setting input[type=checkbox] {
+            -moz-appearance: none;
+            appearance: none;
+            -webkit-appearance: none;
+            width: 45px;
+            height: 25px;
+            border-radius: 25px;
+            background-color: var(--checkbox-bg-unchecked);
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .setting input[type=checkbox]::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 27%;
+            transform: translate(-50%, -50%);
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background-color: var(--button-color);
+            transition: left 0.3s ease;
+        }
+
+        .setting input[type=checkbox]:checked {
+            background-color: var(--checkbox-bg-checked);
+        }
+
+        .setting input[type=checkbox]:checked::after {
+            left: 70%;
+        }
+
+        .setting input[type=text], .setting input[type=password] {
+            width: 270px;
+            height: 30px;
+            border-radius: 25px;
+            text-indent: 5px;
+            background-color: var(--input-bg-color);
+            color: var(--input-color);
+        }
+
+        .setting input[type=submit] {
+            width: 150px;
+            height: 35px;
+            border: none;
+            border-radius: 25px;
+            color: #ffffff;
+            background-color: var(--text-color);
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
         .sidebar {
             width: 200px;
             background-color: #242424;
@@ -355,7 +494,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    
+
     
     <div class="header">
         <!-- Profile section in place of Watch360 title -->
@@ -367,7 +506,43 @@
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
-            <button onclick="location.href='{% url 'settings' %}'">Settings</button>
+            <div class="settings-dropdown">
+                <button onclick="showSettings()" class="dropbtn">Settings</button>
+                <div id="settingsDropdown" class="dropdown-content">
+                    <form method="POST" action="{% url 'homepage' %}">
+                        {% csrf_token %} 
+                        <div class="setting">
+                            <label for="onlineOffline">
+                                <span>Online/Offline Visibility</span>
+                            </label>
+                            <input type="checkbox" id="onlineOffline" name="onlineOffline">
+                        </div>
+                        <div class="setting">
+                            <label for="lightDarkMode">
+                                <span>Light/Dark Mode</span>
+                            </label>
+                            <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
+                        </div>
+                        <div class="setting">
+                            <label for="changeUsername">
+                                <span>Change Your Username</span>
+                            </label>
+                            <input type="text" id="changeUsername" name="changeUsername"
+                                placeholder="Change Your Username">
+                        </div>
+                        <div class="setting">
+                            <label for="changePassword">
+                                <span>Change Your Password</span>
+                            </label>
+                            <input type="password" id="changePassword" name="changePassword" 
+                                placeholder="Change Your Password">
+                        </div>
+                        <div class="setting">
+                            <input type="submit" class="save" value="Save Changes" id="submitButton">
+                        </div>
+                    </form>    
+                </div>    
+            </div>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
     </div>
@@ -451,7 +626,6 @@
             <button id="chat-send-button" class="chat-send-button">Send</button>
         </div>
     </div>
-
     <script>
         const chatHistory = {};
         const chatSocket = new WebSocket("ws://" + window.location.host + "/");
@@ -683,9 +857,79 @@
                 onlineVis.classList.remove('online');
             }
         }
+        function updateDarkMode() {
+            const isChecked = localStorage.getItem('lightDarkMode') === 'true';
+
+            if (isChecked) {
+                document.body.classList.add('dark-mode');
+            }
+            else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
 
         // this checks the status of the isOnline every second
         setInterval(updateSpanClass, 1000);
+        setInterval(updateDarkMode, 100);
+    </script>
+    <script> 
+        // Toggle the dropdown menu visibility
+        function showSettings() {
+            document.getElementById("settingsDropdown").classList.toggle("show");
+        }
+        
+        // Close dropdown if clicking outside the dropdown menu
+        window.addEventListener("click", function(e) {
+            var dropdown = document.getElementById("settingsDropdown");
+            var dropbtn = document.querySelector('.dropbtn');
+            
+            if (!dropdown.contains(e.target) && !dropbtn.contains(e.target)) {
+            dropdown.classList.remove("show");
+            }
+        });
+
+        // variables to get the status of the checkbox and dropdown menu
+        const lightDarkMode = document.getElementById('lightDarkMode');
+        const dropdownContent = document.getElementById('settingsDropdown');
+        const isOnline = document.getElementById('onlineOffline');
+
+        // Toggle dark mode when checkbox is changed
+        lightDarkMode.addEventListener('change', (e) => {
+            document.body.classList.toggle('dark-mode', e.target.checked);
+            settingsDropdown.classList.toggle('dark', e.target.checked);
+        });
+
+        // Set the initial state of isOnline checkbox on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isChecked = localStorage.getItem('checkboxState') === 'true';
+            isOnline.checked = isChecked;
+        });
+
+        // Set the initial state of lightDarkMode checkbox on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isChecked = localStorage.getItem('checkboxState') === 'true';
+            lightDarkMode.checked = isChecked;
+            if (isChecked) {
+                document.body.classList.add('dark-mode');
+            }
+        });
+
+        // Save the lightDarkMode checkbox state when it changes
+        lightDarkMode.addEventListener('change', () => {
+            localStorage.setItem('checkboxState', lightDarkMode.checked.toString());
+            localStorage.setItem('lightDarkMode', lightDarkMode.checked.toString());
+            if (lightDarkMode.checked) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
+
+        // Save the isOnline checkbox state when it changes
+        isOnline.addEventListener('change', () => {
+            localStorage.setItem('checkboxState', isOnline.checked.toString());
+            localStorage.setItem('isOnline', isOnline.checked.toString());
+        });
     </script>
 </body>
 </html>
