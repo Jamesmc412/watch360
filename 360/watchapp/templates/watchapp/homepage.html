@@ -605,7 +605,14 @@
                             <p class="onlineStatus">Online:</p>
                             <span class="dot2" id="friendVisDot"></span> <!-- Placeholder for status -->
                         </div>
-                        <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
+                        <p class="currently-watching">
+                            Currently watching: 
+                            {% if friends_videos[friend.username] %}
+                                <a href="{{ friends_videos[friend.username].video.video_url }}" target="_blank">{{ friends_videos[friend.username].video.video_title }}</a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
                     </div>
                 {% endfor %}
             </div>

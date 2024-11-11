@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 from django.http import JsonResponse
 import requests
 import json
-from .models import YouTubeData
+from .models import YouTubeData, OnlineStatus
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
@@ -212,8 +212,21 @@ def register_view(request):
 
 
 def homepage_view(request):
+    user = request.user  # Get the logged-in user
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(request.user)
+    
+    friends_videos ={}
+    for friend in friends:
+        current_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
+        try:
+            online_status = OnlineStatus.objects.get(user=friend).is_online
+        except OnlineStatus.DoesNotExist:
+            online_status = False  # Default to offline if no OnlineStatus entry
+        friends_videos[friend.username] = {
+            'video': current_video,
+            'is_online': online_status,
+            }
 
     # Create a list of usernames from the friends queryset
     friends_data = [{'username': friend.username} for friend in friends]
@@ -235,8 +248,15 @@ def homepage_view(request):
 
         user.save()
         return redirect('login')
+    
+    context = {
+        'user_videos': YouTubeData.objects.filter(user=user),
+        'friends_videos': friends_videos,
+        'friends': friends,
+        'friends_data': friends_data,
+    }
 
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+    return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
     # Clear the session data
