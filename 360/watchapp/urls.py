@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import login_view, register_view, homepage_view, logout_view, chat_view
+from .views import login_view, register_view, homepage_view, logout_view, chat_view, MyProfile
 from . import views
 
 urlpatterns = [
@@ -11,8 +11,7 @@ urlpatterns = [
     path('delete/<int:video_id>/', views.delete_video, name='delete_video'),
     path('check-videos-status/', views.check_videos_status, name='check_videos_status'),
     path('chat/', chat_view, name='chat'),
-    path('search/', views.search_users, name='search_users'),    # search task-rj
-    #testing django-friendship
+    path('search/', views.search_users, name='search_users'), 
     path('users/', views.user_list, name='user_list'),
     path('send-request/<int:user_id>/', views.send_friend_request, name='send_friend_request'),
     path('accept-request/<int:request_id>/', views.accept_friend_request, name='accept_friend_request'),
