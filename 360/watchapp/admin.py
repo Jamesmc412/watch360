@@ -1,4 +1,5 @@
 from django.contrib import admin
+from .models import Profile
 from .models import YouTubeData
 from .models import Message
 
@@ -7,6 +8,9 @@ admin.site.register(YouTubeData)
 
 
 # Register your models here.
+
+admin.site.register(Profile)
+
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('sender', 'receiver', 'content', 'timestamp')
