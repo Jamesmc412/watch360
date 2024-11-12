@@ -96,15 +96,22 @@ def search_video(request):
 
 @login_required
 def homepage_view(request):
+    user = request.user  # Get the logged-in user
     # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
+    user_videos = YouTubeData.objects.filter(user).order_by('-added_at')
 
     # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
+    friends = Friend.objects.friends(user)
 
     # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
+    friends_data = []
+    for friend in friends:
+        online_status = OnlineStatus.objects.filter(user=friend).first()
+        friends_data.append({
+            'username': friend.username,
+            'is_online': online_status.is_online if online_status else False
+        })
+    
     context = {
         'user_videos': user_videos,
         'friends': friends_data,
@@ -213,25 +220,6 @@ def register_view(request):
 
 def homepage_view(request):
     user = request.user  # Get the logged-in user
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
-    
-    friends_videos ={}
-    for friend in friends:
-        current_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
-        try:
-            online_status = OnlineStatus.objects.get(user=friend).is_online
-        except OnlineStatus.DoesNotExist:
-            online_status = False  # Default to offline if no OnlineStatus entry
-        friends_videos[friend.username] = {
-            'video': current_video,
-            'is_online': online_status,
-            }
-
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-   
-    user = request.user  # Get the logged-in user
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
@@ -248,15 +236,8 @@ def homepage_view(request):
 
         user.save()
         return redirect('login')
-    
-    context = {
-        'user_videos': YouTubeData.objects.filter(user=user),
-        'friends_videos': friends_videos,
-        'friends': friends,
-        'friends_data': friends_data,
-    }
 
-    return render(request, 'watchapp/homepage.html', context)
+    return render(request, 'watchapp/homepage.html')
 
 def logout_view(request):
     # Clear the session data

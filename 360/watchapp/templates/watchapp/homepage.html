@@ -595,26 +595,25 @@
         <div class="friend-section">
             <h2>Your Friends</h2>
             <div class="friend-list">
-                {% for friend in friends %}
-                    <div class="friend-card" onclick="openChat('{{ friend.username }}')">
-                        <div class="friend-avatar-container">
-                            <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                {% if friends %}
+                    {% for friend in friends %}
+                        <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                            <div class="friend-avatar-container">
+                                <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                            </div>
+                            <h2>{{ friend.username }}</h2>
+                            <div class="onlineStatusContainer">
+                                <p class="onlineStatus">Online: {{ friend.is_online }}</p>
+                                <span class="dot2" id="friendVisDot"></span> <!-- Placeholder for status -->
+                            </div>
+                            <p class="currently-watching">
+                                Currently watching: N/A
+                            </p>
                         </div>
-                        <h2>{{ friend.username }}</h2>
-                        <div class="onlineStatusContainer">
-                            <p class="onlineStatus">Online:</p>
-                            <span class="dot2" id="friendVisDot"></span> <!-- Placeholder for status -->
-                        </div>
-                        <p class="currently-watching">
-                            Currently watching: 
-                            {% if friends_videos[friend.username] %}
-                                <a href="{{ friends_videos[friend.username].video.video_url }}" target="_blank">{{ friends_videos[friend.username].video.video_title }}</a>
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </p>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p>You don't have any friends yet!</p>
+                {% endif %}
             </div>
         </div>
     </div>
