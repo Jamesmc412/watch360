@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,26 +7,45 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
     <style>
         body {
-            background-color: white;
-            color: black;
-            position: relative;
             min-height: 100vh; /* Ensure the body covers full viewport height */
             margin: 0;
-            padding-bottom: 100px; /* Space for image */
+            border-color: green;
+            background: linear-gradient(180deg, #000000, #085008, green); /* XBOX style gradient background */
+            color: white; /* Ensure text is readable on the background */
+            font-family: "Segoe UI"; /* same font as XBOX */
         }
 
         a {
             color: green;
         }
 
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 0.75rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: green;
+            box-shadow: 0 0 5px rgba(5, 48, 1, 0.5);
+        }
         .btn-primary {
             background-color: green;
             border-color: green;
+            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.3s, transform 0.3s;
         }
 
         .btn-primary:hover {
             background-color: darkgreen;
             border-color: darkgreen;
+            transform: translateY(-2px);
         }
 
         .bottom-image {
