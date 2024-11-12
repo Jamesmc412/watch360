@@ -98,10 +98,25 @@ def search_video(request):
 def homepage_view(request):
     user = request.user  # Get the logged-in user
     # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user).order_by('-added_at')
+    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
 
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(user)
+    if request.method == 'POST':
+        new_username = request.POST.get('changeUsername')
+        new_password = request.POST.get('changePassword')
+
+        # Update username if provided
+        if new_username:
+            user.username = new_username
+
+        # Update password if provided
+        if new_password:
+            user.set_password(new_password)
+            update_session_auth_hash(request, user)  # Keep user logged in after password change
+
+        user.save()
+        return redirect('login')
 
     # Create a list of usernames from the friends queryset
     friends_data = []
@@ -115,6 +130,7 @@ def homepage_view(request):
     context = {
         'user_videos': user_videos,
         'friends': friends_data,
+        'is_online': OnlineStatus.objects.filter(user=user).first().is_online if OnlineStatus.objects.filter(user=user).exists() else False
     }
     
     return render(request, 'watchapp/homepage.html', context)
@@ -217,28 +233,6 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-
-def homepage_view(request):
-    user = request.user  # Get the logged-in user
-
-    if request.method == 'POST':
-        new_username = request.POST.get('changeUsername')
-        new_password = request.POST.get('changePassword')
-
-        # Update username if provided
-        if new_username:
-            user.username = new_username
-
-        # Update password if provided
-        if new_password:
-            user.set_password(new_password)
-            update_session_auth_hash(request, user)  # Keep user logged in after password change
-
-        user.save()
-        return redirect('login')
-
-    return render(request, 'watchapp/homepage.html')
-
 def logout_view(request):
     # Clear the session data
     request.session.flush()
@@ -260,6 +254,11 @@ def user_list(request):
         'friend_requests_received': friend_requests_received,
     }
     return render(request, 'watchapp/user_list.html', context)
+
+def get_online_status(request):
+    # Retrieve online status for all friends
+    online_status = OnlineStatus.objects.values('user__username', 'is_online')
+    return JsonResponse(list(online_status), safe=False)
 
 # View to send a friend request
 @login_required
