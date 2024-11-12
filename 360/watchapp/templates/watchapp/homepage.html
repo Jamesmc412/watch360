@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{% static 'homepage.css' %}" type="text/css"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/gotham-rounded">
     <title>Watch360</title>
     
     <!-- Add jQuery for easy AJAX calls - rj -->
@@ -13,14 +14,56 @@
 </head>
 <body>
 
+    
     <div class="header">
-        <h1>Watch360</h1>
-        <h2>Hello {{user.username}} &nbsp; 
+        <!-- Profile section in place of Watch360 title -->
+        <div class="profile-section" onclick="window.location.href='{% url 'profile' %}'" style="cursor: pointer;">
+            <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
+            <span>{{ user.username }}</span>
+        </div>
+        <h2>Hello, {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
             <button id="notifications-button">Notifications</button>
-            <button onclick="location.href='{% url 'settings' %}'">Settings</button>
+
+            <div class="settings-dropdown">
+                <button onclick="showSettings()" class="dropbtn">Settings</button>
+                <div id="settingsDropdown" class="dropdown-content">
+                    <form method="POST" action="{% url 'homepage' %}">
+                        {% csrf_token %} 
+                        <div class="setting">
+                            <label for="onlineOffline">
+                                <span>Online/Offline Visibility</span>
+                            </label>
+                            <input type="checkbox" id="onlineOffline" name="onlineOffline">
+                        </div>
+                        <div class="setting">
+                            <label for="lightDarkMode">
+                                <span>Light/Dark Mode</span>
+                            </label>
+                            <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
+                        </div>
+                        <div class="setting">
+                            <label for="changeUsername">
+                                <span>Change Your Username</span>
+                            </label>
+                            <input type="text" id="changeUsername" name="changeUsername"
+                                placeholder="Change Your Username">
+                        </div>
+                        <div class="setting">
+                            <label for="changePassword">
+                                <span>Change Your Password</span>
+                            </label>
+                            <input type="password" id="changePassword" name="changePassword" 
+                                placeholder="Change Your Password">
+                        </div>
+                        <div class="setting">
+                            <input type="submit" class="save" value="Save Changes" id="submitButton">
+                        </div>
+                    </form>    
+                </div>    
+            </div>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
     </div>
@@ -97,6 +140,9 @@
             <div class="friend-list">
                 {% for friend in friends %}
                     <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                        <div class="friend-avatar-container">
+                            <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                        </div>
                         <h2>{{ friend.username }}</h2>
                         <div class="onlineStatusContainer">
                             <p class="onlineStatus">Online:</p>
@@ -123,7 +169,6 @@
             <button id="chat-send-button" class="chat-send-button">Send</button>
         </div>
     </div>
-
     <script>
         const chatHistory = {};
         const chatSocket = new WebSocket("ws://" + window.location.host + "/");
@@ -355,9 +400,79 @@
                 onlineVis.classList.remove('online');
             }
         }
+        function updateDarkMode() {
+            const isChecked = localStorage.getItem('lightDarkMode') === 'true';
+
+            if (isChecked) {
+                document.body.classList.add('dark-mode');
+            }
+            else {
+                document.body.classList.remove('dark-mode');
+            }
+        }
 
         // this checks the status of the isOnline every second
         setInterval(updateSpanClass, 1000);
+        setInterval(updateDarkMode, 100);
+    </script>
+    <script> 
+        // Toggle the dropdown menu visibility
+        function showSettings() {
+            document.getElementById("settingsDropdown").classList.toggle("show");
+        }
+        
+        // Close dropdown if clicking outside the dropdown menu
+        window.addEventListener("click", function(e) {
+            var dropdown = document.getElementById("settingsDropdown");
+            var dropbtn = document.querySelector('.dropbtn');
+            
+            if (!dropdown.contains(e.target) && !dropbtn.contains(e.target)) {
+            dropdown.classList.remove("show");
+            }
+        });
+
+        // variables to get the status of the checkbox and dropdown menu
+        const lightDarkMode = document.getElementById('lightDarkMode');
+        const dropdownContent = document.getElementById('settingsDropdown');
+        const isOnline = document.getElementById('onlineOffline');
+
+        // Toggle dark mode when checkbox is changed
+        lightDarkMode.addEventListener('change', (e) => {
+            document.body.classList.toggle('dark-mode', e.target.checked);
+            settingsDropdown.classList.toggle('dark', e.target.checked);
+        });
+
+        // Set the initial state of isOnline checkbox on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isChecked = localStorage.getItem('checkboxState') === 'true';
+            isOnline.checked = isChecked;
+        });
+
+        // Set the initial state of lightDarkMode checkbox on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const isChecked = localStorage.getItem('checkboxState') === 'true';
+            lightDarkMode.checked = isChecked;
+            if (isChecked) {
+                document.body.classList.add('dark-mode');
+            }
+        });
+
+        // Save the lightDarkMode checkbox state when it changes
+        lightDarkMode.addEventListener('change', () => {
+            localStorage.setItem('checkboxState', lightDarkMode.checked.toString());
+            localStorage.setItem('lightDarkMode', lightDarkMode.checked.toString());
+            if (lightDarkMode.checked) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
+
+        // Save the isOnline checkbox state when it changes
+        isOnline.addEventListener('change', () => {
+            localStorage.setItem('checkboxState', isOnline.checked.toString());
+            localStorage.setItem('isOnline', isOnline.checked.toString());
+        });
     </script>
     
     <script>
