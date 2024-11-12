@@ -205,15 +205,6 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-def homepage_view(request):
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
-
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
-
 def logout_view(request):
     # Clear the session data
     request.session.flush()
