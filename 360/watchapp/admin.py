@@ -2,6 +2,8 @@ from django.contrib import admin
 
 from .models import Profile, YouTubeData, OnlineStatus, Message
 
+
+# Register your models here.
 admin.site.register(YouTubeData)
 admin.site.register(Profile)
 admin.site.register(OnlineStatus)

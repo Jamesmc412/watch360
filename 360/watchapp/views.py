@@ -11,27 +11,20 @@ from bs4 import BeautifulSoup
 from django.http import JsonResponse
 import requests
 import json
-from .models import YouTubeData, OnlineStatus
-from django.views.decorators.http import require_POST
-from .models import YouTubeData, OnlineStatus
-from django.views.decorators.http import require_POST
+from .models import YouTubeData, OnlineStatus, Profile
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
-from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
-from django.db.models import F
+from django.db.models import F, Q # added for search functionality
 from datetime import timedelta
 from background_task import background
 from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
-from django.contrib.auth.models import User
-from .models import Profile
 from django.db import transaction
 from friendship.exceptions import AlreadyExistsError
 
@@ -88,7 +81,7 @@ def search_video(request):
                 duration=duration
             )
             
-            # Update the online status of the user
+            # when a video is added, add that title to the OnlineStatus model (james)
             OnlineStatus.objects.filter(user=request.user).update(video_title=new_video, is_online=True)
 
             # Schedule deletion based on video duration
@@ -102,6 +95,8 @@ def search_video(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+
+# this function should update the online status of the user for already-registered users (james)
 @csrf_exempt
 @login_required
 def update_online_status(request):
@@ -259,6 +254,7 @@ def homepage_view(request):
 
         user.save()
         return redirect('login') # Redirect to the login page after updating the user
+    
      # Create a list of usernames from the friends queryset
     friends_data = []
     for friend in friends:
@@ -279,7 +275,8 @@ def homepage_view(request):
     return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
-    OnlineStatus.objects.filter(user=request.user).update(is_online=False)
+    # when a user logs out, set their online status to False (james)
+    OnlineStatus.objects.filter(user=request.user).update(is_online=False) 
     # Clear the session data
     request.session.flush()
     # Redirect to the login page

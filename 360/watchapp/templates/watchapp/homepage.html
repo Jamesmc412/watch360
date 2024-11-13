@@ -47,6 +47,13 @@
             color: var(--text-color);
             font-family: "Gotham Rounded", sans-serif;
         }
+        /* 
+            Header styling:
+            - Will house the profile section, title, and buttons
+            - Should be fixed at the top of the page
+            - Contains a dropdown for settings, notfications
+        */
+
         .header {
             position: relative;
             height: 60px;
@@ -68,6 +75,7 @@
             border-radius: 50%;
             display: inline-block;
         }
+        /* Define the styles for the so that the online and offline status can be displayed on dots */
         .offline {
             background-color: #bbbbbb;
         }
@@ -85,7 +93,7 @@
             display: flex;
             align-items: center;
         }
-
+        /* Dropdown container styling */
         .settings-dropdown {
             float: left;
             overflow: hidden;
@@ -129,7 +137,7 @@
             background-color: #333;
             color: #2ca243;
         }
-
+        /* copied from the settings page (app.css) */
         .setting {
             padding: 10px 20px;
             display: flex;
@@ -267,6 +275,7 @@
             text-align: center;
             cursor: pointer;
         }
+        /* style the containers for onlineVisibility*/
         .onlineStatusContainer {
             display: flex;
             justify-content: center;
@@ -276,7 +285,7 @@
             font-size: 14px;
             color: #107c10;
         }
-        /* Define the styles for the online and offline status dots */
+        /* This updates the onlineVisibility for each friend card*/
         .dot2 {
             margin-left: 10px;
             width: 10px;
@@ -530,6 +539,7 @@
             <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
             <span>{{ user.username }}</span>
         </div>
+        <!-- h2 shows the online status of the user that they chose on the settings page (james) -->
         <h2>Hello, {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
@@ -556,6 +566,8 @@
                     <p>No new notifications</p>
                 {% endif %}
             </div>
+            
+            <!-- settings dropdown menu - james  -->
             <button id="settings-button">Settings</button>
             <div id="settingsDropdown" class="dropdown-content">
                 <form method="POST" action="{% url 'homepage' %}">
@@ -651,6 +663,8 @@
                                 <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
                             </div>
                             <h2>{{ friend.username }}</h2>
+
+                            <!-- the functionality to display the onlineVisibility and video-watching of each friend card  (james)-->
                             <div class="onlineStatusContainer">
                                 <p class="onlineStatus">Online:</p>
                                 <span class="dot2 {% if friend.is_online %}friend-online{% else %}friend-offline{% endif %}" id="friendVisDot-{{ friend.username }}"></span> <!-- Placeholder for status -->
@@ -985,6 +999,7 @@
     </script>
 
     <script>
+        // script to show the settingsDropdown when the settings button is clicked (james)
         document.addEventListener('DOMContentLoaded', function() {
             const settingsButton = document.getElementById('settings-button');
             const settingsDropdown = document.getElementById('settingsDropdown');
@@ -1007,6 +1022,7 @@
     </script>
 
     <script>
+        // script to update the online status of each friend card's dot (james)
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
             
@@ -1041,7 +1057,7 @@
         });        
     </script>
 
-    <!-- Script to update the online status dot -->
+    <!-- Script to update the online status dot (chatgpt) (james) --> 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
@@ -1077,7 +1093,7 @@
         });        
     </script>
 
-    <!-- Script to update the online status dot -->
+    <!-- Script to update the online status dot for the user's onlineVisibility (chatgpt edited, not generated)  (james) -->
     <script>
         const onlineVis = document.getElementById('onlineVisDot');
 
@@ -1109,7 +1125,7 @@
         setInterval(updateDarkMode, 100);
     </script>
     <script>
-        // Function to fetch friends' online status
+        // Function to fetch friends' online status (chatgpt generated) (james)
         function fetchFriendsOnlineStatus() {
           fetch('{% url "friends_online_status" %}')
             .then(response => response.json())
@@ -1137,6 +1153,7 @@
         setInterval(fetchFriendsOnlineStatus, 10000);
     </script>
     <script>
+        // redundant function to update the online status dot for the user's onlineVisibility (james)
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
             
@@ -1172,6 +1189,8 @@
     </script> 
 
     <script> 
+
+        // copied from the settings page javascript code to get certain things to work on the homepage (james)
 
         // variables to get the status of the checkbox and dropdown menu
         const lightDarkMode = document.getElementById('lightDarkMode');
