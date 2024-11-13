@@ -12,8 +12,6 @@ Welcome to watch360's documentation!
    usage
    setup&install
    core_components
-   directory_structure
-   deployment
 
 
 Indices and tables

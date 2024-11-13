@@ -12,3 +12,6 @@ To chat with a friend on watch360, follow these steps:
 3. **Start Chatting**:
    - Type your message in the chat window and hit send.
 
+Example:
+---------
+https://youtu.be/SRR0FTgu6m0
