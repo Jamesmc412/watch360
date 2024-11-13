@@ -17,5 +17,7 @@ urlpatterns = [
     path('reject-request/<int:request_id>/', views.reject_friend_request, name='reject_friend_request'),
     path('unfriend/<int:user_id>/', views.unfriend, name='unfriend'),
     path('profile/', MyProfile.as_view(), name='profile'),
+    path('api/friends-online-status/', views.friends_online_status, name='friends_online_status'),
+    path('api/update-online-status/', views.update_online_status, name='update_online_status'),
 ]
 

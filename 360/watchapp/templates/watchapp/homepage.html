@@ -245,7 +245,7 @@
             flex-direction: column;
         }
         .top-feature {
-            height: 25vh; /* 25% of the viewport height */
+            height: 50vh; /* 25% of the viewport height */
             padding-bottom: 20px;
         }
         .friend-section {
@@ -276,14 +276,20 @@
             font-size: 14px;
             color: #107c10;
         }
+        /* Define the styles for the online and offline status dots */
         .dot2 {
-            height: 15px;
-            width: 15px;
-            border-radius: 50%;
-            background-color: #bbbbbb;
             margin-left: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
         }
-        
+        .friend-offline {
+            background-color: #bbbbbb;
+        }
+        .friend-online {
+            background-color: #2ca243;
+        }
         .friend-card:hover {
             background-color: #292929;
         }
@@ -498,6 +504,7 @@
         .video-card h2 {
             font-size: 18px;
             margin-bottom: 5px;
+            color: white;
         }
         .video-card p {
             font-size: 14px;
@@ -630,19 +637,30 @@
         <div class="friend-section">
             <h2>Your Friends</h2>
             <div class="friend-list">
-                {% for friend in friends %}
-                    <div class="friend-card" onclick="openChat('{{ friend.username }}')">
-                        <div class="friend-avatar-container">
-                            <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                {% if friends %}
+                    {% for friend in friends %}
+                        <div class="friend-card" onclick="openChat('{{ friend.username }}')">
+                            <div class="friend-avatar-container">
+                                <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
+                            </div>
+                            <h2>{{ friend.username }}</h2>
+                            <div class="onlineStatusContainer">
+                                <p class="onlineStatus">Online:</p>
+                                <span class="dot2 {% if friend.is_online %}friend-online{% else %}friend-offline{% endif %}" id="friendVisDot-{{ friend.username }}"></span> <!-- Placeholder for status -->
+                            </div>
+                            <p class="currently-watching">
+                                Currently watching: 
+                                {% if friend.video  and friend.is_online %}
+                                    {{ friend.video.video_title }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
                         </div>
-                        <h2>{{ friend.username }}</h2>
-                        <div class="onlineStatusContainer">
-                            <p class="onlineStatus">Online:</p>
-                            <span class="dot2" id="friendVisDot"></span> <!-- Placeholder for status -->
-                        </div>
-                        <p class="currently-watching">Currently watching: N/A</p> <!-- Placeholder for currently watching -->
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <p>You don't have any friends yet!</p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -982,9 +1000,81 @@
     </script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const onlineCheckbox = document.getElementById('onlineOffline');
+            
+            // Send AJAX request when the checkbox changes
+            onlineCheckbox.addEventListener('change', function() {
+                const isOnline = onlineCheckbox.checked; // Get the checkbox value (true or false)
+        
+                // Send AJAX request to update online status
+                fetch('/api/update-online-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCSRFToken(),  // Add CSRF token for security
+                    },
+                    body: new URLSearchParams({ 'is_online': isOnline.toString() })  // Convert to string
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Online status updated:', data.is_online);
+                    } else {
+                        console.error('Failed to update status');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            
+            // Helper function to get CSRF token
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        });        
+    </script>
+
+    <!-- Script to update the online status dot -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const onlineCheckbox = document.getElementById('onlineOffline');
+            
+            // Send AJAX request when the checkbox changes
+            onlineCheckbox.addEventListener('change', function() {
+                const isOnline = onlineCheckbox.checked; // Get the checkbox value (true or false)
+        
+                // Send AJAX request to update online status
+                fetch('/api/update-online-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCSRFToken(),  // Add CSRF token for security
+                    },
+                    body: new URLSearchParams({ 'is_online': isOnline.toString() })  // Convert to string
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Online status updated:', data.is_online);
+                    } else {
+                        console.error('Failed to update status');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            
+            // Helper function to get CSRF token
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        });        
+    </script>
+
+    <!-- Script to update the online status dot -->
+    <script>
         const onlineVis = document.getElementById('onlineVisDot');
 
-        // Function to update span class based on saved checkbox state
+        // Function to update dot on header bar to show online status of signed in user
         function updateSpanClass() {
             const isChecked = localStorage.getItem('isOnline') === 'true';
             
@@ -1011,6 +1101,69 @@
         setInterval(updateSpanClass, 1000);
         setInterval(updateDarkMode, 100);
     </script>
+    <script>
+        // Function to fetch friends' online status
+        function fetchFriendsOnlineStatus() {
+          fetch('{% url "friends_online_status" %}')
+            .then(response => response.json())
+            .then(data => {
+              data.forEach(friend => {
+                // Get the friend element by their username
+                const friendElement = document.getElementById(`friend-${friend.username}`);
+                if (friendElement) {
+                  const dot = friendElement.querySelector('.dot2');
+                  // Update the class based on `is_online` status
+                  if (friend.is_online) {
+                    dot.classList.add('friend-online');
+                    dot.classList.remove('friend-offline');
+                  } else {
+                    dot.classList.add('friend-offline');
+                    dot.classList.remove('friend-online');
+                  }
+                }
+              });
+            })
+            .catch(error => console.error('Error fetching friends status:', error));
+        }
+      
+        // Fetch online status every 10 seconds (adjust as needed)
+        setInterval(fetchFriendsOnlineStatus, 10000);
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const onlineCheckbox = document.getElementById('onlineOffline');
+            
+            // Send AJAX request when the checkbox changes
+            onlineCheckbox.addEventListener('change', function() {
+                const isOnline = onlineCheckbox.checked; // Get the checkbox value (true or false)
+        
+                // Send AJAX request to update online status
+                fetch('{% url "update_online_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCSRFToken(),  // Add CSRF token for security
+                    },
+                    body: new URLSearchParams({ 'is_online': isOnline.toString() })  // Convert to string
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Online status updated:', data.is_online);
+                    } else {
+                        console.error('Failed to update status');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            
+            // Helper function to get CSRF token
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        });    
+    </script> 
+
     <script> 
 
         // variables to get the status of the checkbox and dropdown menu

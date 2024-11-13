@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from PIL import Image
 
 class YouTubeData(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -10,13 +11,6 @@ class YouTubeData(models.Model):
 
     def __str__(self):
         return self.video_title
-
-
-# Create your models here.
-from django.contrib.auth.models import User
-from PIL import Image
-
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -39,6 +33,14 @@ class Profile(models.Model):
             # overwrite the larger image
             img.save(self.avatar.path) 
             
+class OnlineStatus(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    video_title= models.ForeignKey(YouTubeData, on_delete=models.SET_NULL, blank=True, null=True)
+    is_online = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.user.username} Online Status'
+            
             
 # Create your models here.
 class Message(models.Model):
@@ -48,6 +50,4 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.sender.username} to {self.receiver.username} at {self.timestamp}: {self.content}"
-    
-    
+        return f'{self.user.username} Online Status'

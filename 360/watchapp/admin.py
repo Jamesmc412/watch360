@@ -1,15 +1,10 @@
 from django.contrib import admin
 
-from .models import Profile
-from .models import YouTubeData
-from .models import Message
+from .models import Profile, YouTubeData, OnlineStatus, Message
 
 admin.site.register(YouTubeData)
-
-
-# Register your models here.
-
 admin.site.register(Profile)
+admin.site.register(OnlineStatus)
 
 # Register your models here.
 @admin.register(Message)

@@ -11,7 +11,10 @@ from bs4 import BeautifulSoup
 from django.http import JsonResponse
 import requests
 import json
-from .models import YouTubeData
+from .models import YouTubeData, OnlineStatus
+from django.views.decorators.http import require_POST
+from .models import YouTubeData, OnlineStatus
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
@@ -29,6 +32,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
+from django.db import transaction
 from friendship.exceptions import AlreadyExistsError
 
 def get_video_data(video_url):
@@ -69,7 +73,7 @@ def search_video(request):
                 return JsonResponse({'error': 'YouTube URL is required'}, status=400)
 
             # Get video data (title and duration)
-            video_title, duration, error = get_video_data(video_url)
+            vid_title, duration, error = get_video_data(video_url)
             if error:
                 return JsonResponse({'error': error}, status=400)
 
@@ -80,20 +84,38 @@ def search_video(request):
             new_video = YouTubeData.objects.create(
                 user=request.user,
                 video_url=video_url,
-                video_title=video_title,
+                video_title=vid_title,
                 duration=duration
             )
+            
+            # Update the online status of the user
+            OnlineStatus.objects.filter(user=request.user).update(video_title=new_video, is_online=True)
 
             # Schedule deletion based on video duration
             delete_video_task(new_video.id, schedule=timedelta(seconds=duration))
 
             # Return success response
-            return JsonResponse({'message': 'Video scheduled for deletion', 'title': video_title})
+            return JsonResponse({'message': 'Video scheduled for deletion', 'title': vid_title})
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+@csrf_exempt
+@login_required
+def update_online_status(request):
+    if request.method == 'POST':
+        is_online = request.POST.get('is_online') == 'true'
+        try:
+            # Update or create the OnlineStatus for the logged-in user
+            online_status, created = OnlineStatus.objects.get_or_create(user=request.user)
+            online_status.is_online = is_online
+            online_status.save()
+            return JsonResponse({'status': 'success', 'is_online': online_status.is_online})
+        except OnlineStatus.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'OnlineStatus not found.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 # Background task to delete video after the duration
 @background
@@ -159,7 +181,19 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                
+                # Use transaction.atomic to ensure data consistency
+                with transaction.atomic():
+                    # Update or create the OnlineStatus instance
+                    OnlineStatus.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'video_title': None,
+                            'is_online': True
+                            }
+                    )
                 return redirect('homepage')  # Redirect to the home page or dashboard
+    
             else:
                 error = "Invalid credentials"
     else:
@@ -224,17 +258,28 @@ def homepage_view(request):
             update_session_auth_hash(request, user)  # Keep user logged in after password change
 
         user.save()
-        return redirect('login')  # Redirect to login page after changes
-
+        return redirect('login') # Redirect to the login page after updating the user
+     # Create a list of usernames from the friends queryset
+    friends_data = []
+    for friend in friends:
+        online_status = OnlineStatus.objects.filter(user=friend).first()
+        latest_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
+        friends_data.append({
+            'username': friend.username,
+            'is_online': online_status.is_online if online_status else False,
+            'video': latest_video  # Add the video object to the friend's data
+        })
     context = {
         'user_videos': user_videos,
         'friends': friends_data,
+        'is_online': OnlineStatus.objects.filter(user=user).first().is_online if OnlineStatus.objects.filter(user=user).exists() else False,
         'pending_requests': pending_requests_data,
     }
 
     return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
+    OnlineStatus.objects.filter(user=request.user).update(is_online=False)
     # Clear the session data
     request.session.flush()
     # Redirect to the login page
@@ -274,6 +319,18 @@ def accept_friend_request(request, request_id):
     
     except FriendshipRequest.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
+@login_required
+def friends_online_status(request):
+    friends = Friend.objects.friends(request.user)  # Assuming you're using Django-Friendship
+    friends_status = [
+        {
+            'username': friend.username,
+            'is_online': OnlineStatus.objects.filter(user=friend).first().is_online
+        }
+        for friend in friends
+    ]
+    return JsonResponse(friends_status, safe=False)
+
 # View to reject a friend request
 @login_required
 def reject_friend_request(request, request_id):
