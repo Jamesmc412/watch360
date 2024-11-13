@@ -237,12 +237,6 @@ def logout_view(request):
     # Redirect to the login page
     return redirect('login')
 
-def logout_view(request):
-    # Clear the session data
-    request.session.flush()
-    # Redirect to the login page
-    return redirect('login')
-
 # View to display all users
 @login_required
 def user_list(request):
