@@ -24,6 +24,11 @@ from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
+from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django import forms
+from django.contrib.auth.models import User
+from .models import Profile
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -88,25 +93,6 @@ def search_video(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
-@login_required
-def homepage_view(request):
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
-
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
-
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
-    context = {
-        'user_videos': user_videos,
-        'friends': friends_data,
-    }
-    
-    return render(request, 'watchapp/homepage.html', context)
 
 # Background task to delete video after the duration
 @background
@@ -217,9 +203,13 @@ def homepage_view(request):
     # Create a list of usernames from the friends queryset
     friends_data = [{'username': friend.username} for friend in friends]
 
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
+
     return render(request, 'watchapp/homepage.html', {
         "friends": friends_data,
-        "pending_requests": pending_requests_data
+        "pending_requests": pending_requests_data, 
+        'user_videos': user_videos
     })
 def logout_view(request):
     # Clear the session data
@@ -245,10 +235,15 @@ def settings_view(request):
             update_session_auth_hash(request, user)  # Keep user logged in after password change
 
         user.save()
-        messages.success(request, 'Settings updated successfully!')
         return redirect('login')
 
-    return render(request, 'watchapp/settings.html', {'user': user})
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
+
+def logout_view(request):
+    # Clear the session data
+    request.session.flush()
+    # Redirect to the login page
+    return redirect('login')
 
 # View to display all users
 @login_required
@@ -334,3 +329,39 @@ def search_users(request):
         user_data = [{'id': user.id, 'username': user.username} for user in users]  # Include user ID
         return JsonResponse(user_data, safe=False)
     return JsonResponse([], safe=False)
+
+# views.py
+class MyProfile(LoginRequiredMixin, View):
+    def get(self, request):
+        user_form = ProfileUpdateForm(instance=request.user)
+        profile_form = ProfileUpdateForm(instance=request.user.profile)
+        
+        context = {
+            'user_form': user_form,
+            'profile_form': profile_form
+        }
+        
+        return render(request, 'watchapp/profile.html', context)
+    
+    def post(self, request):
+        user_form = ProfileUpdateForm(request.POST, instance=request.user)
+        profile_form = ProfileUpdateForm(request.POST, request.FILES, instance=request.user.profile)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, 'Your profile has been updated successfully')
+            return redirect('profile')
+        else:
+            context = {
+                'user_form': user_form,
+                'profile_form': profile_form
+            }
+            messages.error(request, 'Error updating your profile')
+            return render(request, 'watchapp/profile.html', context)
+
+        
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['avatar', 'bio']  # Include the bio field here
