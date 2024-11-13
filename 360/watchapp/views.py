@@ -29,6 +29,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
+from django.db import transaction
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -97,6 +98,21 @@ def search_video(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+
+@csrf_exempt
+@login_required
+def update_online_status(request):
+    if request.method == 'POST':
+        is_online = request.POST.get('is_online') == 'true'
+        try:
+            # Update or create the OnlineStatus for the logged-in user
+            online_status, created = OnlineStatus.objects.get_or_create(user=request.user)
+            online_status.is_online = is_online
+            online_status.save()
+            return JsonResponse({'status': 'success', 'is_online': online_status.is_online})
+        except OnlineStatus.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'OnlineStatus not found.'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 @login_required
 def homepage_view(request):
@@ -205,7 +221,19 @@ def login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
+                
+                # Use transaction.atomic to ensure data consistency
+                with transaction.atomic():
+                    # Update or create the OnlineStatus instance
+                    OnlineStatus.objects.update_or_create(
+                        user=user,
+                        defaults={
+                            'video_title': None,
+                            'is_online': True
+                            }
+                    )
                 return redirect('homepage')  # Redirect to the home page or dashboard
+    
             else:
                 error = "Invalid credentials"
     else:
@@ -234,7 +262,6 @@ def register_view(request):
             user = User.objects.create_user(
                 username=username, password=password, 
                 first_name=first_name, last_name=last_name)
-            OnlineStatus.objects.create(user=user, video_title=None, is_online=False)
             messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
@@ -262,20 +289,6 @@ def user_list(request):
         'friend_requests_received': friend_requests_received,
     }
     return render(request, 'watchapp/user_list.html', context)
-
-@csrf_exempt
-@require_POST
-def update_online_status(request):
-    
-    is_online = request.POST.get('is_online') == 'true';
-    
-    # Update the online status of the user
-    user = request.user
-    online_status, created = OnlineStatus.objects.get_or_create(user=user)
-    online_status.is_online = is_online
-    online_status.save()
-    
-    return JsonResponse({'status': 'success', 'is_online': online_status.is_online})
         
 
 # View to send a friend request
@@ -308,6 +321,18 @@ def accept_friend_request(request, request_id):
     # Accept the request
     friend_request.accept()
     return redirect('user_list')
+
+@login_required
+def friends_online_status(request):
+    friends = Friend.objects.friends(request.user)  # Assuming you're using Django-Friendship
+    friends_status = [
+        {
+            'username': friend.username,
+            'is_online': OnlineStatus.objects.filter(user=friend).first().is_online
+        }
+        for friend in friends
+    ]
+    return JsonResponse(friends_status, safe=False)
 
 # View to reject a friend request
 @login_required

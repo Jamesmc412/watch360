@@ -926,6 +926,69 @@
         setInterval(updateSpanClass, 1000);
         setInterval(updateDarkMode, 100);
     </script>
+    <script>
+        // Function to fetch friends' online status
+        function fetchFriendsOnlineStatus() {
+          fetch('{% url "friends_online_status" %}')
+            .then(response => response.json())
+            .then(data => {
+              data.forEach(friend => {
+                // Get the friend element by their username
+                const friendElement = document.getElementById(`friend-${friend.username}`);
+                if (friendElement) {
+                  const dot = friendElement.querySelector('.dot2');
+                  // Update the class based on `is_online` status
+                  if (friend.is_online) {
+                    dot.classList.add('friend-online');
+                    dot.classList.remove('friend-offline');
+                  } else {
+                    dot.classList.add('friend-offline');
+                    dot.classList.remove('friend-online');
+                  }
+                }
+              });
+            })
+            .catch(error => console.error('Error fetching friends status:', error));
+        }
+      
+        // Fetch online status every 10 seconds (adjust as needed)
+        setInterval(fetchFriendsOnlineStatus, 10000);
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const onlineCheckbox = document.getElementById('onlineOffline');
+            
+            // Send AJAX request when the checkbox changes
+            onlineCheckbox.addEventListener('change', function() {
+                const isOnline = onlineCheckbox.checked; // Get the checkbox value (true or false)
+        
+                // Send AJAX request to update online status
+                fetch('{% url "update_online_status" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCSRFToken(),  // Add CSRF token for security
+                    },
+                    body: new URLSearchParams({ 'is_online': isOnline.toString() })  // Convert to string
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        console.log('Online status updated:', data.is_online);
+                    } else {
+                        console.error('Failed to update status');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+            
+            // Helper function to get CSRF token
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        });    
+    </script> 
+
     <script> 
         // Toggle the dropdown menu visibility
         function showSettings() {
