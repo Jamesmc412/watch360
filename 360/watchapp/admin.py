@@ -9,6 +9,7 @@ admin.site.register(Profile)
 admin.site.register(OnlineStatus)
 
 # Register your models here.
+# This allows the Admin to view actual info.
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
     list_display = ('sender', 'receiver', 'content', 'timestamp')

@@ -2,6 +2,7 @@ from django.urls import path
 from .views import login_view, register_view, homepage_view, logout_view, chat_view, MyProfile
 from . import views
 
+#All the different urls that are needed.
 urlpatterns = [
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
