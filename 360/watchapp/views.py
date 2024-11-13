@@ -68,7 +68,7 @@ def search_video(request):
                 return JsonResponse({'error': 'YouTube URL is required'}, status=400)
 
             # Get video data (title and duration)
-            video_title, duration, error = get_video_data(video_url)
+            vid_title, duration, error = get_video_data(video_url)
             if error:
                 return JsonResponse({'error': error}, status=400)
 
@@ -79,15 +79,18 @@ def search_video(request):
             new_video = YouTubeData.objects.create(
                 user=request.user,
                 video_url=video_url,
-                video_title=video_title,
+                video_title=vid_title,
                 duration=duration
             )
+            
+            # Update the online status of the user
+            OnlineStatus.objects.filter(user=request.user).update(video_title=new_video, is_online=True)
 
             # Schedule deletion based on video duration
             delete_video_task(new_video.id, schedule=timedelta(seconds=duration))
 
             # Return success response
-            return JsonResponse({'message': 'Video scheduled for deletion', 'title': video_title})
+            return JsonResponse({'message': 'Video scheduled for deletion', 'title': vid_title})
 
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
@@ -231,12 +234,14 @@ def register_view(request):
             user = User.objects.create_user(
                 username=username, password=password, 
                 first_name=first_name, last_name=last_name)
+            OnlineStatus.objects.create(user=user, video_title=None, is_online=False)
             messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
     return render(request, 'watchapp/register.html', {'error': error})
 
 def logout_view(request):
+    OnlineStatus.objects.filter(user=request.user).update(is_online=False)
     # Clear the session data
     request.session.flush()
     # Redirect to the login page

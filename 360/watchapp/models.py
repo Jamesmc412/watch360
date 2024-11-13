@@ -35,7 +35,7 @@ class Profile(models.Model):
             
 class OnlineStatus(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    video_title = models.OneToOneField(YouTubeData, on_delete=models.CASCADE, default=1)
+    video_title= models.ForeignKey(YouTubeData, on_delete=models.CASCADE, blank=True, null=True)
     is_online = models.BooleanField(default=False)
 
     def __str__(self):
