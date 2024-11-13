@@ -629,103 +629,159 @@
     <script>
         const chatHistory = {};
         const chatSocket = new WebSocket("ws://" + window.location.host + "/");
-
+        const currentUsername = "{{ request.user.username }}"; // Current user's username
+    
         // WebSocket event listeners
         chatSocket.onopen = function () {
             console.log("Connected to WebSocket.");
         };
+        
         chatSocket.onclose = function () {
-            console.log("WebSocket connection closed.");
+            console.log("WebSocket connection closed. Attempting to reconnect...");
+            setTimeout(() => {
+                chatSocket = new WebSocket("ws://" + window.location.host + "/");
+            }, 3000);
         };
-
-        // Open chat with a specific friend
-        function openChat(friendName) {
-            document.getElementById('chat-friend-name').textContent = friendName;
-            document.getElementById('chat-widget').style.right = '0px'; // Slide in widget
-            document.getElementById('chat-input-message').value = ''; // Clear input
-
-            if (!chatHistory[friendName]) {
-                chatHistory[friendName] = []; // Initialize chat history
-            }
-            displayChatHistory(friendName);
-        }
 
         // Close the chat widget
         function closeChat() {
             document.getElementById('chat-widget').style.right = '-400px'; // Slide out widget
         }
-
+    
         // Display chat history in the chat body
         function displayChatHistory(friendName) {
             const chatBody = document.getElementById('chat-body');
             chatBody.innerHTML = ''; // Clear chat body
 
-            chatHistory[friendName].forEach(msg => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
-                messageDiv.textContent = msg.text;
-                chatBody.appendChild(messageDiv);
-            });
+            if (chatHistory[friendName]) {
+                chatHistory[friendName].forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
+                    messageDiv.textContent = msg.message; // Display the actual message content
+                    chatBody.appendChild(messageDiv);
+                });
 
-            // Scroll to the bottom of the chat
-            chatBody.scrollTop = chatBody.scrollHeight;
+                // Scroll to the bottom of the chat
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
         }
 
+    
         // Send message via WebSocket
-        document.getElementById('chat-send-button').onclick = function () {
-            sendMessage();
-        };
-
-        document.getElementById('chat-input-message').onkeyup = function (e) {
-            if (e.keyCode === 13) { // Enter key
-                sendMessage();
-            }
-        };
-
         function sendMessage() {
             const messageInput = document.getElementById('chat-input-message');
             const messageText = messageInput.value;
-            const friendName = document.getElementById('chat-friend-name').textContent;
-            const currentTime = new Date().toLocaleTimeString();
+            const receiverName = document.getElementById('chat-friend-name').textContent;
+            
+            if (chatSocket.readyState !== WebSocket.OPEN) {
+                console.log("WebSocket connection is closed.");
+                alert("Connection lost. Please try again later.");
+                return;
+            }
+
 
             if (messageText) {
-                // Send message through WebSocket
                 chatSocket.send(JSON.stringify({
                     message: messageText,
-                    username: "{{request.user.username}}",
-                    time: currentTime
+                    sender: currentUsername,
+                    receiver: receiverName
                 }));
 
-                // Add message to local chat history
-                chatHistory[friendName].push({ sender: 'me', text: messageText });
-                displayChatHistory(friendName); // Update chat display
-                messageInput.value = ''; // Clear input
+                // Display the message immediately only if it’s not already displayed
+                const chatBody = document.getElementById('chat-body');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-bubble sender';
+                messageDiv.textContent = messageText;
+                chatBody.appendChild(messageDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                // Clear the input field
+                messageInput.value = '';
             }
         }
 
-        // Receive messages from WebSocket
+        chatSocket.onerror = function (error) {
+            console.error("WebSocket error observed:", error);
+        };
+
+        // When opening chat with a friend, pass the friend's name as the receiver
+        function openChat(friendName) {
+            document.getElementById('chat-friend-name').textContent = friendName;
+            document.getElementById('chat-widget').style.right = '0px';
+            document.getElementById('chat-input-message').value = '';
+            
+            // Request chat history every time the chat is opened
+            const requestChatHistory = () => {
+                chatSocket.send(JSON.stringify({
+                    type: "load_history",
+                    friend_name: friendName
+                }));
+            };
+
+            // Clear existing messages and request fresh history
+            chatHistory[friendName] = [];
+
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                requestChatHistory();
+            } else {
+                // Retry if WebSocket isn't open
+                const intervalId = setInterval(() => {
+                    if (chatSocket.readyState === WebSocket.OPEN) {
+                        requestChatHistory();
+                        clearInterval(intervalId);
+                    }
+                }, 100);
+            }
+            
+            displayChatHistory(friendName);
+        }
+
+
+    
+        // When receiving messages, display only those with matching sender and receiver
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
-            const friendName = data.username;
-            const messageContainer = document.getElementById('chat-body');
-            const div = document.createElement('div');
+            const friendName = document.getElementById('chat-friend-name').textContent;
 
-            // Style messages based on sender
-            div.className = (data.username === "{{request.user.username}}") ? 'chat-bubble sender' : 'chat-bubble receiver';
-            div.innerHTML = `<div class="message-content">
-                <span class="message-username">${data.username.charAt(0).toUpperCase() + data.username.slice(1)}</span>
-                <span class="message-text">${data.message}</span>
-                <span class="message-timestamp">${data.time}</span>
-            </div>`;
+            if (data.type === "chat_history") {
+                chatHistory[friendName] = data.messages.map(msg => ({
+                    sender: msg.sender === currentUsername ? 'me' : msg.sender,
+                    message: msg.message // Store with "message" key for consistency
+                }));
+                displayChatHistory(friendName);
 
-            messageContainer.appendChild(div);
-            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll
+            } else if (data.type === "new_message") {
+                if (data.sender === currentUsername) return;
 
-            // Save the message in chat history
-            if (!chatHistory[friendName]) {
-                chatHistory[friendName] = [];
+                if (!chatHistory[friendName]) {
+                    chatHistory[friendName] = [];
+                }
+
+                const isDuplicate = chatHistory[friendName].some(msg => msg.message === data.message && msg.sender === data.sender);
+                if (!isDuplicate) {
+                    chatHistory[friendName].push({
+                        sender: data.sender === currentUsername ? 'me' : data.sender,
+                        message: data.message
+                    });
+
+                    // Display the new message in the chat
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = data.sender === currentUsername ? 'chat-bubble sender' : 'chat-bubble receiver';
+                    messageDiv.textContent = data.message;
+                    document.getElementById('chat-body').appendChild(messageDiv);
+                    document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
+                }
             }
-            chatHistory[friendName].push({ sender: friendName, text: data.message });
+        };
+
+    
+        // Button click and Enter key events to send messages
+        document.getElementById('chat-send-button').onclick = sendMessage;
+        document.getElementById('chat-input-message').onkeyup = function (e) {
+            if (e.keyCode === 13 && !e.shiftKey) { // Enter without Shift
+                sendMessage();
+                e.preventDefault(); // Prevents adding a new line
+            }
         };
 
         // Function to get CSRF token from the form
