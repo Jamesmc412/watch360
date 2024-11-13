@@ -276,7 +276,7 @@ def homepage_view(request):
         'pending_requests': pending_requests_data,
     }
 
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data}, context)
+    return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
     OnlineStatus.objects.filter(user=request.user).update(is_online=False)
