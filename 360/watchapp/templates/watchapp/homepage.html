@@ -615,8 +615,8 @@
                             </div>
                             <p class="currently-watching">
                                 Currently watching: 
-                                {% if friend.current_video %}
-                                    {{ friend.current_video.video_title }}
+                                {% if friend.video %}
+                                    {{ friend.video.video_title }}
                                 {% else %}
                                     N/A
                                 {% endif %}

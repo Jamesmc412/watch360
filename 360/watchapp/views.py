@@ -123,9 +123,11 @@ def homepage_view(request):
     friends_data = []
     for friend in friends:
         online_status = OnlineStatus.objects.filter(user=friend).first()
+        latest_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
         friends_data.append({
             'username': friend.username,
-            'is_online': online_status.is_online if online_status else False
+            'is_online': online_status.is_online if online_status else False,
+            'video': latest_video  # Add the video object to the friend's data
         })
     
     context = {
