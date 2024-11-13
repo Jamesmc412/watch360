@@ -1,6 +1,9 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/gotham-rounded">
@@ -24,7 +27,7 @@
 
         /* Dark mode overrides */
         body.dark-mode {
-            --bg-color: #000000;
+            --bg-color: linear-gradient(180deg, #000000, #085008, green); /* XBOX style gradient background */; 
             --panel-bg: #000000;
             --navbar-bg: #111;
             --text-color: #2ca243;
@@ -40,12 +43,13 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
+            background: var(--bg-color);
             color: var(--text-color);
             font-family: "Gotham Rounded", sans-serif;
         }
         .header {
             position: relative;
+            height: 60px;
             background-color: var(--panel-bg);
             padding: 10px 20px;
             display: flex;
@@ -196,7 +200,7 @@
         .sidebar {
             width: 200px;
             background-color: #242424;
-            height: 100vh;
+            height: calc(100% - 60px); /* Subtract the height of the header */
             position: fixed;
             top: 79px;
             left: 0;
@@ -210,13 +214,18 @@
             border-radius: 5px;
         }
         .sidebar form button {
-            width: 100%;
-            padding: 10px;
-            background-color: #107c10;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: #4CAF50; /* Green background */
+            border: none; /* Remove borders */
+            color: white; /* White text */
+            padding: 15px 32px; /* Some padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Make the button inline-block */
+            font-size: 16px; /* Increase font size */
+            margin: 4px 2px; /* Some margin */
+            cursor: pointer; /* Pointer/hand icon */
+            border-radius: 12px; /* Rounded corners */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
         }
         .sidebar form button:hover {
             background-color: #107c10;
@@ -228,18 +237,24 @@
         }
 
         .main-content {
+            height: 100vh; /* Full viewport height */
+            width: 100vw;
             margin-left: 220px;
             padding: 20px;
             display: flex;
             flex-direction: column;
         }
         .top-feature {
-            flex-grow: 1; /* Makes this section take up available space at the top */
+            height: 25vh; /* 25% of the viewport height */
             padding-bottom: 20px;
         }
         .friend-section {
-            flex-shrink: 0; /* Keeps this section fixed at the bottom */
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; 
+            overflow-y: auto; /* Enable scrolling if content overflows */
         }
+
         .friend-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -418,9 +433,6 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
-
-        
-
         
         .profile-section {
             white-space: nowrap; /* Prevents line breaks */
@@ -436,7 +448,6 @@
             margin-right: 8px; /* Space between image and text */
             object-fit: cover; /* Ensures the image fits within the circle without distortion */
         }
-
 
         .profile-section:hover span {
          color: white;
@@ -454,8 +465,6 @@
             object-fit: cover; /* Ensures the image fills the circle without distortion */
         }
 
-
-
         .youtube-search {
             margin-top: auto;  /* Pushes the form to the bottom */
         }
@@ -467,14 +476,20 @@
             border: 1px solid #ccc;
         }
         .youtube-search button {
-            width: 100%;
-            padding: 10px;
-            background-color: #107c10;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: #4CAF50; /* Green background */
+            border: none; /* Remove borders */
+            color: white; /* White text */
+            padding: 15px 32px; /* Some padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Make the button inline-block */
+            font-size: 16px; /* Increase font size */
+            margin: 4px 2px; /* Some margin */
+            cursor: pointer; /* Pointer/hand icon */
+            border-radius: 12px; /* Rounded corners */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
         }
+
         .video-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -495,14 +510,13 @@
             font-size: 14px;
             color: #bbb;
         }          
-
-    </style>
+</style>
+    
     <!-- Add jQuery for easy AJAX calls - rj -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
 
-    
     <div class="header">
         <!-- Profile section in place of Watch360 title -->
         <div class="profile-section" onclick="window.location.href='{% url 'profile' %}'" style="cursor: pointer;">
@@ -513,46 +527,67 @@
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
-            <div class="settings-dropdown">
-                <button onclick="showSettings()" class="dropbtn">Settings</button>
-                <div id="settingsDropdown" class="dropdown-content">
-                    <form method="POST" action="{% url 'homepage' %}">
-                        {% csrf_token %} 
-                        <div class="setting">
-                            <label for="onlineOffline">
-                                <span>Online/Offline Visibility</span>
-                            </label>
-                            <input type="checkbox" id="onlineOffline" name="onlineOffline">
-                        </div>
-                        <div class="setting">
-                            <label for="lightDarkMode">
-                                <span>Light/Dark Mode</span>
-                            </label>
-                            <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
-                        </div>
-                        <div class="setting">
-                            <label for="changeUsername">
-                                <span>Change Your Username</span>
-                            </label>
-                            <input type="text" id="changeUsername" name="changeUsername"
-                                placeholder="Change Your Username">
-                        </div>
-                        <div class="setting">
-                            <label for="changePassword">
-                                <span>Change Your Password</span>
-                            </label>
-                            <input type="password" id="changePassword" name="changePassword" 
-                                placeholder="Change Your Password">
-                        </div>
-                        <div class="setting">
-                            <input type="submit" class="save" value="Save Changes" id="submitButton">
-                        </div>
-                    </form>    
-                </div>    
+            <button id="notifications-button">Notifications</button>
+            <div id="notifications-dropdown" class="dropdown-content">
+                {% if pending_requests %}
+                    <ul>
+                        {% for request in pending_requests %}
+                            <li>
+                                {{ request.username }} sent you a friend request.
+                                <form action="{% url 'accept_friend_request' request.request_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Accept</button>
+                                </form>
+                                <form action="{% url 'reject_friend_request' request.request_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Reject</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No new notifications</p>
+                {% endif %}
             </div>
+            <button id="settings-button">Settings</button>
+            <div id="settingsDropdown" class="dropdown-content">
+                <form method="POST" action="{% url 'homepage' %}">
+                    {% csrf_token %} 
+                    <div class="setting">
+                        <label for="onlineOffline">
+                            <span>Online/Offline Visibility</span>
+                        </label>
+                        <input type="checkbox" id="onlineOffline" name="onlineOffline">
+                    </div>
+                    <div class="setting">
+                        <label for="lightDarkMode">
+                            <span>Light/Dark Mode</span>
+                        </label>
+                        <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
+                    </div>
+                    <div class="setting">
+                        <label for="changeUsername">
+                            <span>Change Your Username</span>
+                        </label>
+                        <input type="text" id="changeUsername" name="changeUsername"
+                            placeholder="Change Your Username">
+                    </div>
+                    <div class="setting">
+                        <label for="changePassword">
+                            <span>Change Your Password</span>
+                        </label>
+                        <input type="password" id="changePassword" name="changePassword" 
+                            placeholder="Change Your Password">
+                    </div>
+                    <div class="setting">
+                        <input type="submit" class="save" value="Save Changes" id="submitButton">
+                    </div>
+                </form>    
+            </div>    
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
     </div>
+
 
     <div class="sidebar">
         <h3>Search People</h3>
@@ -647,103 +682,159 @@
     <script>
         const chatHistory = {};
         const chatSocket = new WebSocket("ws://" + window.location.host + "/");
-
+        const currentUsername = "{{ request.user.username }}"; // Current user's username
+    
         // WebSocket event listeners
         chatSocket.onopen = function () {
             console.log("Connected to WebSocket.");
         };
+        
         chatSocket.onclose = function () {
-            console.log("WebSocket connection closed.");
+            console.log("WebSocket connection closed. Attempting to reconnect...");
+            setTimeout(() => {
+                chatSocket = new WebSocket("ws://" + window.location.host + "/");
+            }, 3000);
         };
-
-        // Open chat with a specific friend
-        function openChat(friendName) {
-            document.getElementById('chat-friend-name').textContent = friendName;
-            document.getElementById('chat-widget').style.right = '0px'; // Slide in widget
-            document.getElementById('chat-input-message').value = ''; // Clear input
-
-            if (!chatHistory[friendName]) {
-                chatHistory[friendName] = []; // Initialize chat history
-            }
-            displayChatHistory(friendName);
-        }
 
         // Close the chat widget
         function closeChat() {
             document.getElementById('chat-widget').style.right = '-400px'; // Slide out widget
         }
-
+    
         // Display chat history in the chat body
         function displayChatHistory(friendName) {
             const chatBody = document.getElementById('chat-body');
             chatBody.innerHTML = ''; // Clear chat body
 
-            chatHistory[friendName].forEach(msg => {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
-                messageDiv.textContent = msg.text;
-                chatBody.appendChild(messageDiv);
-            });
+            if (chatHistory[friendName]) {
+                chatHistory[friendName].forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
+                    messageDiv.textContent = msg.message; // Display the actual message content
+                    chatBody.appendChild(messageDiv);
+                });
 
-            // Scroll to the bottom of the chat
-            chatBody.scrollTop = chatBody.scrollHeight;
+                // Scroll to the bottom of the chat
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }
         }
 
+    
         // Send message via WebSocket
-        document.getElementById('chat-send-button').onclick = function () {
-            sendMessage();
-        };
-
-        document.getElementById('chat-input-message').onkeyup = function (e) {
-            if (e.keyCode === 13) { // Enter key
-                sendMessage();
-            }
-        };
-
         function sendMessage() {
             const messageInput = document.getElementById('chat-input-message');
             const messageText = messageInput.value;
-            const friendName = document.getElementById('chat-friend-name').textContent;
-            const currentTime = new Date().toLocaleTimeString();
+            const receiverName = document.getElementById('chat-friend-name').textContent;
+            
+            if (chatSocket.readyState !== WebSocket.OPEN) {
+                console.log("WebSocket connection is closed.");
+                alert("Connection lost. Please try again later.");
+                return;
+            }
+
 
             if (messageText) {
-                // Send message through WebSocket
                 chatSocket.send(JSON.stringify({
                     message: messageText,
-                    username: "{{request.user.username}}",
-                    time: currentTime
+                    sender: currentUsername,
+                    receiver: receiverName
                 }));
 
-                // Add message to local chat history
-                chatHistory[friendName].push({ sender: 'me', text: messageText });
-                displayChatHistory(friendName); // Update chat display
-                messageInput.value = ''; // Clear input
+                // Display the message immediately only if it’s not already displayed
+                const chatBody = document.getElementById('chat-body');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-bubble sender';
+                messageDiv.textContent = messageText;
+                chatBody.appendChild(messageDiv);
+                chatBody.scrollTop = chatBody.scrollHeight;
+
+                // Clear the input field
+                messageInput.value = '';
             }
         }
 
-        // Receive messages from WebSocket
+        chatSocket.onerror = function (error) {
+            console.error("WebSocket error observed:", error);
+        };
+
+        // When opening chat with a friend, pass the friend's name as the receiver
+        function openChat(friendName) {
+            document.getElementById('chat-friend-name').textContent = friendName;
+            document.getElementById('chat-widget').style.right = '0px';
+            document.getElementById('chat-input-message').value = '';
+            
+            // Request chat history every time the chat is opened
+            const requestChatHistory = () => {
+                chatSocket.send(JSON.stringify({
+                    type: "load_history",
+                    friend_name: friendName
+                }));
+            };
+
+            // Clear existing messages and request fresh history
+            chatHistory[friendName] = [];
+
+            if (chatSocket.readyState === WebSocket.OPEN) {
+                requestChatHistory();
+            } else {
+                // Retry if WebSocket isn't open
+                const intervalId = setInterval(() => {
+                    if (chatSocket.readyState === WebSocket.OPEN) {
+                        requestChatHistory();
+                        clearInterval(intervalId);
+                    }
+                }, 100);
+            }
+            
+            displayChatHistory(friendName);
+        }
+
+
+    
+        // When receiving messages, display only those with matching sender and receiver
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
-            const friendName = data.username;
-            const messageContainer = document.getElementById('chat-body');
-            const div = document.createElement('div');
+            const friendName = document.getElementById('chat-friend-name').textContent;
 
-            // Style messages based on sender
-            div.className = (data.username === "{{request.user.username}}") ? 'chat-bubble sender' : 'chat-bubble receiver';
-            div.innerHTML = `<div class="message-content">
-                <span class="message-username">${data.username.charAt(0).toUpperCase() + data.username.slice(1)}</span>
-                <span class="message-text">${data.message}</span>
-                <span class="message-timestamp">${data.time}</span>
-            </div>`;
+            if (data.type === "chat_history") {
+                chatHistory[friendName] = data.messages.map(msg => ({
+                    sender: msg.sender === currentUsername ? 'me' : msg.sender,
+                    message: msg.message // Store with "message" key for consistency
+                }));
+                displayChatHistory(friendName);
 
-            messageContainer.appendChild(div);
-            messageContainer.scrollTop = messageContainer.scrollHeight; // Auto-scroll
+            } else if (data.type === "new_message") {
+                if (data.sender === currentUsername) return;
 
-            // Save the message in chat history
-            if (!chatHistory[friendName]) {
-                chatHistory[friendName] = [];
+                if (!chatHistory[friendName]) {
+                    chatHistory[friendName] = [];
+                }
+
+                const isDuplicate = chatHistory[friendName].some(msg => msg.message === data.message && msg.sender === data.sender);
+                if (!isDuplicate) {
+                    chatHistory[friendName].push({
+                        sender: data.sender === currentUsername ? 'me' : data.sender,
+                        message: data.message
+                    });
+
+                    // Display the new message in the chat
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = data.sender === currentUsername ? 'chat-bubble sender' : 'chat-bubble receiver';
+                    messageDiv.textContent = data.message;
+                    document.getElementById('chat-body').appendChild(messageDiv);
+                    document.getElementById('chat-body').scrollTop = document.getElementById('chat-body').scrollHeight;
+                }
             }
-            chatHistory[friendName].push({ sender: friendName, text: data.message });
+        };
+
+    
+        // Button click and Enter key events to send messages
+        document.getElementById('chat-send-button').onclick = sendMessage;
+        document.getElementById('chat-input-message').onkeyup = function (e) {
+            if (e.keyCode === 13 && !e.shiftKey) { // Enter without Shift
+                sendMessage();
+                e.preventDefault(); // Prevents adding a new line
+            }
         };
 
         // Function to get CSRF token from the form
@@ -808,7 +899,7 @@
     </script>
     <!-- AJAX Script -->
     <script>
-    document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
+        document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
         event.preventDefault(); // Prevent default form behavior
 
         const url = document.getElementById('youtube-url').value;
@@ -839,25 +930,73 @@
             console.error("Error:", error);
             document.getElementById('video-title').innerText = 'An error occurred.';
         }
-    });
+        });
 
-    let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+        let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
 
-    async function pollVideoStatus() {
-        try {
-            const response = await fetch("{% url 'check_videos_status' %}");
-            const data = await response.json();
-            const currentVideoCount = data.video_count;
+        async function pollVideoStatus() {
+            try {
+                const response = await fetch("{% url 'check_videos_status' %}");
+                const data = await response.json();
+                const currentVideoCount = data.video_count;
 
-            if (currentVideoCount < previousVideoCount) {
-                location.reload();
+                if (currentVideoCount < previousVideoCount) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error("Error checking video status:", error);
             }
-        } catch (error) {
-            console.error("Error checking video status:", error);
         }
-    }
 
-    setInterval(pollVideoStatus, 10000);
+        setInterval(pollVideoStatus, 10000);
+    </script>
+
+    <script>
+        // script to generate notifications and settings dropdown menus
+
+        $(document).ready(function() {
+            $('#notifications-button').click(function() {
+                $('#notifications-dropdown').toggle();
+            });
+
+            $('#settings-button').click(function() {
+                $('#settingsDropdown').toggle();
+            });
+
+            // Close the dropdown if the user clicks outside of it
+            $(window).click(function(event) {
+                if (!event.target.matches('#notifications-button') && !event.target.matches('#settings-button')) {
+                    var dropdowns = $('.dropdown-content');
+                    dropdowns.each(function() {
+                        if ($(this).is(':visible')) {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsButton = document.getElementById('settings-button');
+            const settingsDropdown = document.getElementById('settingsDropdown');
+
+            settingsButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                settingsDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!settingsDropdown.contains(event.target) && event.target !== settingsButton) {
+                    settingsDropdown.classList.remove('show');
+                }
+            });
+
+            settingsDropdown.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
     </script>
 
     <script>
@@ -1026,20 +1165,6 @@
     </script> 
 
     <script> 
-        // Toggle the dropdown menu visibility
-        function showSettings() {
-            document.getElementById("settingsDropdown").classList.toggle("show");
-        }
-        
-        // Close dropdown if clicking outside the dropdown menu
-        window.addEventListener("click", function(e) {
-            var dropdown = document.getElementById("settingsDropdown");
-            var dropbtn = document.querySelector('.dropbtn');
-            
-            if (!dropdown.contains(e.target) && !dropbtn.contains(e.target)) {
-            dropdown.classList.remove("show");
-            }
-        });
 
         // variables to get the status of the checkbox and dropdown menu
         const lightDarkMode = document.getElementById('lightDarkMode');

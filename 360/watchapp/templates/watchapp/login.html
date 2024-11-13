@@ -1,4 +1,3 @@
-{% load static %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,28 +5,48 @@
     <meta charset="UTF-8">
     <title>Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.cdnfonts.com/css/gotham-rounded">
     <style>
         body {
-            background-color: white;
-            color: black;
-            position: relative;
             min-height: 100vh; /* Ensure the body covers full viewport height */
             margin: 0;
-            padding-bottom: 100px; /* Space for image */
+            border-color: green;
+            background: linear-gradient(180deg, #000000, #085008, green); /* XBOX style gradient background */
+            color: white; /* Ensure text is readable on the background */
+            font-family: "Gotham Rounded", sans-serif;
         }
 
         a {
-            color: green;
+            color: rgb(0, 0, 0);
         }
 
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-control {
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 0.75rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: green;
+            box-shadow: 0 0 5px rgba(5, 48, 1, 0.5);
+        }
         .btn-primary {
             background-color: green;
             border-color: green;
+            border-radius: 5px;
+            padding: 0.75rem 1.5rem;
+            transition: background-color 0.3s, transform 0.3s;
         }
 
         .btn-primary:hover {
             background-color: darkgreen;
             border-color: darkgreen;
+            transform: translateY(-2px);
         }
 
         .bottom-image {
@@ -35,7 +54,7 @@
             bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 200px;
+            width: 250px;
             height: auto;
         }
     </style>
@@ -68,13 +87,11 @@
                         <input type="submit" name="submit" class="btn btn-primary" value="Submit" />
                     </div>
 
-                    <p>Don't have an account? <a href="{% url 'register' %}">Register here</a>.</p>
+                    <p>Don't have an account? <a href="{% url 'register' %}">Register here.</a></p>
                 </form>
             </div>
         </div>
     </div>
-
-    <!-- Image positioned at the bottom of the page -->
-    <img src="{% static 'smallxbox.png' %}" alt="Small Xbox" class="bottom-image">
+    <img src="/static/logo-official.png" alt="Bottom Image" class="bottom-image">
 </body>
 </html>

@@ -34,13 +34,4 @@ class Migration(migrations.Migration):
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
-        migrations.CreateModel(
-            name='OnlineStatus',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('is_online', models.BooleanField(default=False)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-                ('video_title', models.OneToOneField(default=1, on_delete=django.db.models.deletion.CASCADE, to='watchapp.youtubedata')),
-            ],
-        ),
     ]

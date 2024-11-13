@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
@@ -221,12 +222,11 @@ def register_view(request):
             user = User.objects.create_user(
                 username=username, password=password, 
                 first_name=first_name, last_name=last_name)
-            messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
     return render(request, 'watchapp/register.html', {'error': error})
 
-
+@login_required
 def homepage_view(request):
     user = request.user  # Get the logged-in user
 
@@ -235,16 +235,14 @@ def homepage_view(request):
 
     # Retrieve only the videos for the currently logged-in user
     user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
-    
+
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
     # Create a list of pending friend requests
     pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
-
+    
     # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-   
-    user = request.user  # Get the logged-in user
+    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
@@ -286,23 +284,6 @@ def logout_view(request):
     request.session.flush()
     # Redirect to the login page
     return redirect('login')
-
-# View to display all users
-@login_required
-def user_list(request):
-    users = User.objects.exclude(id=request.user.id)
-    friends = Friend.objects.friends(request.user)
-    friend_requests_sent = Friend.objects.sent_requests(user=request.user)
-    friend_requests_received = Friend.objects.unrejected_requests(user=request.user)
-    
-    context = {
-        'users': users,
-        'friends': friends,
-        'friend_requests_sent': friend_requests_sent,
-        'friend_requests_received': friend_requests_received,
-    }
-    return render(request, 'watchapp/user_list.html', context)
-        
 
 # View to send a friend request
 @login_required
@@ -353,14 +334,18 @@ def friends_online_status(request):
 # View to reject a friend request
 @login_required
 def reject_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    try:
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+        
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to reject this request.")
+        
+        # Reject the request
+        friend_request.reject()
+        return redirect('homepage')  # Redirect to the homepage
     
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to reject this request.")
-    
-    # Reject the request
-    friend_request.reject()
-    return redirect('user_list')
+    except FriendshipRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 
 # View to unfriend someone
 @login_required
