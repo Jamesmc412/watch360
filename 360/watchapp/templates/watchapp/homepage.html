@@ -27,7 +27,7 @@
 
         /* Dark mode overrides */
         body.dark-mode {
-            --bg-color: #000000;
+            --bg-color: linear-gradient(180deg, #000000, #085008, green); /* XBOX style gradient background */; 
             --panel-bg: #000000;
             --navbar-bg: #111;
             --text-color: #2ca243;
@@ -43,12 +43,13 @@
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
+            background: var(--bg-color);
             color: var(--text-color);
             font-family: "Gotham Rounded", sans-serif;
         }
         .header {
             position: relative;
+            height: 60px;
             background-color: var(--panel-bg);
             padding: 10px 20px;
             display: flex;
@@ -199,7 +200,7 @@
         .sidebar {
             width: 200px;
             background-color: #242424;
-            height: 100vh;
+            height: calc(100% - 60px); /* Subtract the height of the header */
             position: fixed;
             top: 79px;
             left: 0;
@@ -213,13 +214,18 @@
             border-radius: 5px;
         }
         .sidebar form button {
-            width: 100%;
-            padding: 10px;
-            background-color: #107c10;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: #4CAF50; /* Green background */
+            border: none; /* Remove borders */
+            color: white; /* White text */
+            padding: 15px 32px; /* Some padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Make the button inline-block */
+            font-size: 16px; /* Increase font size */
+            margin: 4px 2px; /* Some margin */
+            cursor: pointer; /* Pointer/hand icon */
+            border-radius: 12px; /* Rounded corners */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
         }
         .sidebar form button:hover {
             background-color: #107c10;
@@ -231,18 +237,24 @@
         }
 
         .main-content {
+            height: 100vh; /* Full viewport height */
+            width: 100vw;
             margin-left: 220px;
             padding: 20px;
             display: flex;
             flex-direction: column;
         }
         .top-feature {
-            flex-grow: 1; /* Makes this section take up available space at the top */
+            height: 25vh; /* 25% of the viewport height */
             padding-bottom: 20px;
         }
         .friend-section {
-            flex-shrink: 0; /* Keeps this section fixed at the bottom */
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; 
+            overflow-y: auto; /* Enable scrolling if content overflows */
         }
+
         .friend-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -415,9 +427,6 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
-
-        
-
         
         .profile-section {
             white-space: nowrap; /* Prevents line breaks */
@@ -451,8 +460,6 @@
             object-fit: cover; /* Ensures the image fills the circle without distortion */
         }
 
-
-
         .youtube-search {
             margin-top: auto;  /* Pushes the form to the bottom */
         }
@@ -464,14 +471,20 @@
             border: 1px solid #ccc;
         }
         .youtube-search button {
-            width: 100%;
-            padding: 10px;
-            background-color: #107c10;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            background-color: #4CAF50; /* Green background */
+            border: none; /* Remove borders */
+            color: white; /* White text */
+            padding: 15px 32px; /* Some padding */
+            text-align: center; /* Center the text */
+            text-decoration: none; /* Remove underline */
+            display: inline-block; /* Make the button inline-block */
+            font-size: 16px; /* Increase font size */
+            margin: 4px 2px; /* Some margin */
+            cursor: pointer; /* Pointer/hand icon */
+            border-radius: 12px; /* Rounded corners */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
         }
+
         .video-list {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
