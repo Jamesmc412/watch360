@@ -29,6 +29,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
+from friendship.exceptions import AlreadyExistsError
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -93,7 +94,6 @@ def search_video(request):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
-
 
 # Background task to delete video after the duration
 @background
@@ -192,9 +192,15 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
+@login_required
 def homepage_view(request):
+    user = request.user  # Get the logged-in user
+
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
+
     # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
+    friends = Friend.objects.friends(user)
 
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
@@ -202,12 +208,7 @@ def homepage_view(request):
     pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
     
     # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
-
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
-
-    user = request.user  # Get the logged-in user
+    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
@@ -223,13 +224,15 @@ def homepage_view(request):
             update_session_auth_hash(request, user)  # Keep user logged in after password change
 
         user.save()
-        return redirect('login')
-    
-    return render(request, 'watchapp/homepage.html', {
-        "friends": friends_data,
-        "pending_requests": pending_requests_data,
-        'user_videos': user_videos
-    })
+        return redirect('login')  # Redirect to login page after changes
+
+    context = {
+        'user_videos': user_videos,
+        'friends': friends_data,
+        'pending_requests': pending_requests_data,
+    }
+
+    return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
     # Clear the session data
