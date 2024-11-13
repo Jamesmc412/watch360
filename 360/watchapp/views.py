@@ -1,23 +1,16 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, update_session_auth_hash
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
 from bs4 import BeautifulSoup
-from django.http import JsonResponse
 import requests
 import json
 from .models import YouTubeData, OnlineStatus, Profile
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
 from datetime import timedelta
-from django.utils.timezone import now
 from django.db.models import F, Q # added for search functionality
-from datetime import timedelta
 from background_task import background
 from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
@@ -239,8 +232,10 @@ def register_view(request):
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
 
+        # username must be unique
         if User.objects.filter(username=username).exists():
             error = "The username is already taken!"
+        # password must be at least 6 characters
         elif len(password) < 6:
             error = "Password must have at least 6 characters."
         elif password != confirm_password:
@@ -331,8 +326,10 @@ def send_friend_request(request, user_id):
             user                    # The recipient
         )
         return JsonResponse({'status': 'success'})
+    
+    # Handle the case when the request was already sent
     except AlreadyExistsError:
-        return JsonResponse({'status': 'already_requested'})  # Handle the case when the request was already sent
+        return JsonResponse({'status': 'already_requested'})  
 
 # View to accept a friend request
 @login_required
@@ -340,6 +337,7 @@ def accept_friend_request(request, request_id):
     try:
         friend_request = get_object_or_404(FriendshipRequest, id=request_id)
         
+        # Make sure the right user is accepting the request
         if friend_request.to_user != request.user:
             return HttpResponse("You don't have permission to accept this request.")
         
@@ -347,8 +345,10 @@ def accept_friend_request(request, request_id):
         friend_request.accept()
         return redirect('homepage')  # Redirect to the homepage
     
+    # Handle the case when the request does not exist
     except FriendshipRequest.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
+
 @login_required
 def friends_online_status(request):
     friends = Friend.objects.friends(request.user)  # Assuming you're using Django-Friendship
@@ -367,6 +367,7 @@ def reject_friend_request(request, request_id):
     try:
         friend_request = get_object_or_404(FriendshipRequest, id=request_id)
         
+        # Make sure the correct user is rejecting the request
         if friend_request.to_user != request.user:
             return HttpResponse("You don't have permission to reject this request.")
         
@@ -374,6 +375,7 @@ def reject_friend_request(request, request_id):
         friend_request.reject()
         return redirect('homepage')  # Redirect to the homepage
     
+    # Handle the case when the request does not exist
     except FriendshipRequest.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 

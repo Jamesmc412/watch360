@@ -244,6 +244,7 @@
             color: white;
         }
 
+        /* container for video cards and friend cards with flexbox to split page */
         .main-content {
             height: 100vh; /* Full viewport height */
             width: 100vw;
@@ -252,7 +253,9 @@
             display: flex;
             flex-direction: column;
         }
-        .top-feature {
+
+        /* video cards feature */
+        .top-feature { 
             height: 50vh; /* 25% of the viewport height */
             padding-bottom: 20px;
         }
@@ -423,7 +426,7 @@
             flex-direction: column;
         }
 
-                .search-results div {
+        .search-results div {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -544,8 +547,10 @@
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
+            <!-- notifications dropdown menu -->
             <button id="notifications-button">Notifications</button>
             <div id="notifications-dropdown" class="dropdown-content">
+                <!-- gets open friend requests from the database -->
                 {% if pending_requests %}
                     <ul>
                         {% for request in pending_requests %}
@@ -665,6 +670,7 @@
         <div class="friend-section">
             <h2>Your Friends</h2>
             <div class="friend-list">
+                <!-- retrieve friends from the database -->
                 {% if friends %}
                     {% for friend in friends %}
                         <div class="friend-card" onclick="openChat('{{ friend.username }}')">
@@ -1001,7 +1007,7 @@
 
 
     <script>
-        // script to generate notifications and settings dropdown menus
+        // script to generate notifications and settings dropdown menus made by copilot
 
         $(document).ready(function() {
             $('#notifications-button').click(function() {
