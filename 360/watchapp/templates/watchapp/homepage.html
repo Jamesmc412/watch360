@@ -415,9 +415,6 @@
         .friend-btn:hover {
             background-color: rgb(0, 252, 71); /* Add hover effect */
         }
-
-        
-
         
         .profile-section {
             white-space: nowrap; /* Prevents line breaks */
@@ -434,7 +431,6 @@
             object-fit: cover; /* Ensures the image fits within the circle without distortion */
         }
 
-
         .profile-section:hover span {
          color: white;
         }
@@ -450,8 +446,6 @@
             border-radius: 50%; /* Makes the image circular */
             object-fit: cover; /* Ensures the image fills the circle without distortion */
         }
-
-
 
         .youtube-search {
             margin-top: auto;  /* Pushes the form to the bottom */
@@ -498,7 +492,6 @@
 </head>
 <body>
 
-    
     <div class="header">
         <!-- Profile section in place of Watch360 title -->
         <div class="profile-section" onclick="window.location.href='{% url 'profile' %}'" style="cursor: pointer;">
@@ -531,47 +524,45 @@
                     <p>No new notifications</p>
                 {% endif %}
             </div>
-
-            <div class="settings-dropdown">
-                <button onclick="showSettings()" class="dropbtn">Settings</button>
-                <div id="settingsDropdown" class="dropdown-content">
-                    <form method="POST" action="{% url 'homepage' %}">
-                        {% csrf_token %} 
-                        <div class="setting">
-                            <label for="onlineOffline">
-                                <span>Online/Offline Visibility</span>
-                            </label>
-                            <input type="checkbox" id="onlineOffline" name="onlineOffline">
-                        </div>
-                        <div class="setting">
-                            <label for="lightDarkMode">
-                                <span>Light/Dark Mode</span>
-                            </label>
-                            <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
-                        </div>
-                        <div class="setting">
-                            <label for="changeUsername">
-                                <span>Change Your Username</span>
-                            </label>
-                            <input type="text" id="changeUsername" name="changeUsername"
-                                placeholder="Change Your Username">
-                        </div>
-                        <div class="setting">
-                            <label for="changePassword">
-                                <span>Change Your Password</span>
-                            </label>
-                            <input type="password" id="changePassword" name="changePassword" 
-                                placeholder="Change Your Password">
-                        </div>
-                        <div class="setting">
-                            <input type="submit" class="save" value="Save Changes" id="submitButton">
-                        </div>
-                    </form>    
-                </div>    
-            </div>
+            <button id="settings-button">Settings</button>
+            <div id="settingsDropdown" class="dropdown-content">
+                <form method="POST" action="{% url 'homepage' %}">
+                    {% csrf_token %} 
+                    <div class="setting">
+                        <label for="onlineOffline">
+                            <span>Online/Offline Visibility</span>
+                        </label>
+                        <input type="checkbox" id="onlineOffline" name="onlineOffline">
+                    </div>
+                    <div class="setting">
+                        <label for="lightDarkMode">
+                            <span>Light/Dark Mode</span>
+                        </label>
+                        <input type="checkbox" id="lightDarkMode" name="lightDarkMode">
+                    </div>
+                    <div class="setting">
+                        <label for="changeUsername">
+                            <span>Change Your Username</span>
+                        </label>
+                        <input type="text" id="changeUsername" name="changeUsername"
+                            placeholder="Change Your Username">
+                    </div>
+                    <div class="setting">
+                        <label for="changePassword">
+                            <span>Change Your Password</span>
+                        </label>
+                        <input type="password" id="changePassword" name="changePassword" 
+                            placeholder="Change Your Password">
+                    </div>
+                    <div class="setting">
+                        <input type="submit" class="save" value="Save Changes" id="submitButton">
+                    </div>
+                </form>    
+            </div>    
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
     </div>
+
 
     <div class="sidebar">
         <h3>Search People</h3>
@@ -816,7 +807,7 @@
     </script>
     <!-- AJAX Script -->
     <script>
-    document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
+        document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
         event.preventDefault(); // Prevent default form behavior
 
         const url = document.getElementById('youtube-url').value;
@@ -847,25 +838,73 @@
             console.error("Error:", error);
             document.getElementById('video-title').innerText = 'An error occurred.';
         }
-    });
+        });
 
-    let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+        let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
 
-    async function pollVideoStatus() {
-        try {
-            const response = await fetch("{% url 'check_videos_status' %}");
-            const data = await response.json();
-            const currentVideoCount = data.video_count;
+        async function pollVideoStatus() {
+            try {
+                const response = await fetch("{% url 'check_videos_status' %}");
+                const data = await response.json();
+                const currentVideoCount = data.video_count;
 
-            if (currentVideoCount < previousVideoCount) {
-                location.reload();
+                if (currentVideoCount < previousVideoCount) {
+                    location.reload();
+                }
+            } catch (error) {
+                console.error("Error checking video status:", error);
             }
-        } catch (error) {
-            console.error("Error checking video status:", error);
         }
-    }
 
-    setInterval(pollVideoStatus, 10000);
+        setInterval(pollVideoStatus, 10000);
+    </script>
+
+    <script>
+        // script to generate notifications and settings dropdown menus
+
+        $(document).ready(function() {
+            $('#notifications-button').click(function() {
+                $('#notifications-dropdown').toggle();
+            });
+
+            $('#settings-button').click(function() {
+                $('#settingsDropdown').toggle();
+            });
+
+            // Close the dropdown if the user clicks outside of it
+            $(window).click(function(event) {
+                if (!event.target.matches('#notifications-button') && !event.target.matches('#settings-button')) {
+                    var dropdowns = $('.dropdown-content');
+                    dropdowns.each(function() {
+                        if ($(this).is(':visible')) {
+                            $(this).hide();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const settingsButton = document.getElementById('settings-button');
+            const settingsDropdown = document.getElementById('settingsDropdown');
+
+            settingsButton.addEventListener('click', function(event) {
+                event.stopPropagation();
+                settingsDropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', function(event) {
+                if (!settingsDropdown.contains(event.target) && event.target !== settingsButton) {
+                    settingsDropdown.classList.remove('show');
+                }
+            });
+
+            settingsDropdown.addEventListener('click', function(event) {
+                event.stopPropagation();
+            });
+        });
     </script>
 
     <script>
@@ -899,20 +938,6 @@
         setInterval(updateDarkMode, 100);
     </script>
     <script> 
-        // Toggle the dropdown menu visibility
-        function showSettings() {
-            document.getElementById("settingsDropdown").classList.toggle("show");
-        }
-        
-        // Close dropdown if clicking outside the dropdown menu
-        window.addEventListener("click", function(e) {
-            var dropdown = document.getElementById("settingsDropdown");
-            var dropbtn = document.querySelector('.dropbtn');
-            
-            if (!dropdown.contains(e.target) && !dropbtn.contains(e.target)) {
-            dropdown.classList.remove("show");
-            }
-        });
 
         // variables to get the status of the checkbox and dropdown menu
         const lightDarkMode = document.getElementById('lightDarkMode');
@@ -955,28 +980,6 @@
         isOnline.addEventListener('change', () => {
             localStorage.setItem('checkboxState', isOnline.checked.toString());
             localStorage.setItem('isOnline', isOnline.checked.toString());
-        });
-    </script>
-    
-    <script>
-        // script to generate notifications dropdown menu generated from copilot
-
-        $(document).ready(function() {
-            $('#notifications-button').click(function() {
-                $('#notifications-dropdown').toggle();
-            });
-    
-            // Close the dropdown if the user clicks outside of it
-            $(window).click(function(event) {
-                if (!event.target.matches('#notifications-button')) {
-                    var dropdowns = $('.dropdown-content');
-                    dropdowns.each(function() {
-                        if ($(this).is(':visible')) {
-                            $(this).hide();
-                        }
-                    });
-                }
-            });
         });
     </script>
 </body>
