@@ -191,31 +191,52 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
+@login_required
 def homepage_view(request):
+
+    user = request.user  # Get the logged-in user
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
+
     # Get all friends of the logged-in user
-    friends = Friend.objects.friends(request.user)
+    friends = Friend.objects.friends(user)
 
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
     # Create a list of pending friend requests
     pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+
+    if request.method == 'POST':
+        new_username = request.POST.get('changeUsername')
+        new_password = request.POST.get('changePassword')
+
     
+        # Update username if provided
+        if new_username:
+            user.username = new_username
+
+        # Update password if provided
+        if new_password:
+            user.set_password(new_password)
+            update_session_auth_hash(request, user)  # Keep user logged in after password change
+
+        user.save()
+        return redirect('login')
+
     # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username} for friend in friends]
+    friends_data = []
+    for friend in friends:
+        friends_data.append({
+            'username': friend.username,
+        })
 
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
-
-    return render(request, 'watchapp/homepage.html', {
-        "friends": friends_data,
+    context = {
+        'user_videos': user_videos,
+        'friends': friends_data,
         "pending_requests": pending_requests_data, 
-        'user_videos': user_videos
-    })
-def logout_view(request):
-    # Clear the session data
-    request.session.flush()
-    # Redirect to the login page
-    return redirect('login')
+    }
+
+    return render(request, 'watchapp/homepage.html', context)
 
 @login_required
 def settings_view(request):
