@@ -196,11 +196,11 @@ def register_view(request):
 def homepage_view(request):
     user = request.user  # Get the logged-in user
 
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
-
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(user)
+
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
 
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
@@ -239,22 +239,6 @@ def logout_view(request):
     request.session.flush()
     # Redirect to the login page
     return redirect('login')
-
-# View to display all users
-@login_required
-def user_list(request):
-    users = User.objects.exclude(id=request.user.id)
-    friends = Friend.objects.friends(request.user)
-    friend_requests_sent = Friend.objects.sent_requests(user=request.user)
-    friend_requests_received = Friend.objects.unrejected_requests(user=request.user)
-    
-    context = {
-        'users': users,
-        'friends': friends,
-        'friend_requests_sent': friend_requests_sent,
-        'friend_requests_received': friend_requests_received,
-    }
-    return render(request, 'watchapp/user_list.html', context)
 
 # View to send a friend request
 @login_required
