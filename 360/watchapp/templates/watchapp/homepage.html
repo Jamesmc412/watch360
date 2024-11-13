@@ -510,6 +510,27 @@
         </h2>
         <div class="header-buttons">
             <button id="notifications-button">Notifications</button>
+            <div id="notifications-dropdown" class="dropdown-content">
+                {% if pending_requests %}
+                    <ul>
+                        {% for request in pending_requests %}
+                            <li>
+                                {{ request.username }} sent you a friend request.
+                                <form action="{% url 'accept_friend_request' request.request_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Accept</button>
+                                </form>
+                                <form action="{% url 'reject_friend_request' request.request_id %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Reject</button>
+                                </form>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No new notifications</p>
+                {% endif %}
+            </div>
 
             <div class="settings-dropdown">
                 <button onclick="showSettings()" class="dropbtn">Settings</button>
@@ -550,28 +571,6 @@
             </div>
             <button onclick="location.href='{% url 'logout' %}'">Logout</button>
         </div>
-    </div>
-    <!-- Dropdown widget -->
-    <div id="notifications-dropdown" class="dropdown-content">
-        {% if pending_requests %}
-            <ul>
-                {% for request in pending_requests %}
-                    <li>
-                        {{ request.username }} sent you a friend request.
-                        <form action="{% url 'accept_friend_request' request.request_id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Accept</button>
-                        </form>
-                        <form action="{% url 'reject_friend_request' request.request_id %}" method="post">
-                            {% csrf_token %}
-                            <button type="submit">Reject</button>
-                        </form>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No new notifications</p>
-        {% endif %}
     </div>
 
     <div class="sidebar">
