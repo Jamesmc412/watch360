@@ -12,6 +12,8 @@ import requests
 import json
 from .models import YouTubeData, OnlineStatus
 from django.views.decorators.http import require_POST
+from .models import YouTubeData, OnlineStatus
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
@@ -30,6 +32,7 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
 from django.db import transaction
+from friendship.exceptions import AlreadyExistsError
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -98,7 +101,6 @@ def search_video(request):
 
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
 @csrf_exempt
 @login_required
 def update_online_status(request):
@@ -113,49 +115,6 @@ def update_online_status(request):
         except OnlineStatus.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'OnlineStatus not found.'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
-
-@login_required
-def homepage_view(request):
-    user = request.user  # Get the logged-in user
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
-
-    # Get all friends of the logged-in user
-    friends = Friend.objects.friends(user)
-    if request.method == 'POST':
-        new_username = request.POST.get('changeUsername')
-        new_password = request.POST.get('changePassword')
-
-        # Update username if provided
-        if new_username:
-            user.username = new_username
-
-        # Update password if provided
-        if new_password:
-            user.set_password(new_password)
-            update_session_auth_hash(request, user)  # Keep user logged in after password change
-
-        user.save()
-        return redirect('login')
-
-    # Create a list of usernames from the friends queryset
-    friends_data = []
-    for friend in friends:
-        online_status = OnlineStatus.objects.filter(user=friend).first()
-        latest_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
-        friends_data.append({
-            'username': friend.username,
-            'is_online': online_status.is_online if online_status else False,
-            'video': latest_video  # Add the video object to the friend's data
-        })
-    
-    context = {
-        'user_videos': user_videos,
-        'friends': friends_data,
-        'is_online': OnlineStatus.objects.filter(user=user).first().is_online if OnlineStatus.objects.filter(user=user).exists() else False
-    }
-    
-    return render(request, 'watchapp/homepage.html', context)
 
 # Background task to delete video after the duration
 @background
@@ -267,6 +226,60 @@ def register_view(request):
 
     return render(request, 'watchapp/register.html', {'error': error})
 
+
+def homepage_view(request):
+    user = request.user  # Get the logged-in user
+
+    # Get all friends of the logged-in user
+    friends = Friend.objects.friends(user)
+
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
+    
+    # Get all pending friend requests
+    pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
+    # Create a list of pending friend requests
+    pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username} for friend in friends]
+   
+    user = request.user  # Get the logged-in user
+
+    if request.method == 'POST':
+        new_username = request.POST.get('changeUsername')
+        new_password = request.POST.get('changePassword')
+
+        # Update username if provided
+        if new_username:
+            user.username = new_username
+
+        # Update password if provided
+        if new_password:
+            user.set_password(new_password)
+            update_session_auth_hash(request, user)  # Keep user logged in after password change
+
+        user.save()
+        return redirect('login') # Redirect to the login page after updating the user
+     # Create a list of usernames from the friends queryset
+    friends_data = []
+    for friend in friends:
+        online_status = OnlineStatus.objects.filter(user=friend).first()
+        latest_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
+        friends_data.append({
+            'username': friend.username,
+            'is_online': online_status.is_online if online_status else False,
+            'video': latest_video  # Add the video object to the friend's data
+        })
+    context = {
+        'user_videos': user_videos,
+        'friends': friends_data,
+        'is_online': OnlineStatus.objects.filter(user=user).first().is_online if OnlineStatus.objects.filter(user=user).exists() else False,
+        'pending_requests': pending_requests_data,
+    }
+
+    return render(request, 'watchapp/homepage.html', {"friends": friends_data}, context)
+
 def logout_view(request):
     OnlineStatus.objects.filter(user=request.user).update(is_online=False)
     # Clear the session data
@@ -313,15 +326,18 @@ def send_friend_request(request, user_id):
 # View to accept a friend request
 @login_required
 def accept_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    try:
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+        
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to accept this request.")
+        
+        # Accept the request
+        friend_request.accept()
+        return redirect('homepage')  # Redirect to the homepage
     
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to accept this request.")
-    
-    # Accept the request
-    friend_request.accept()
-    return redirect('user_list')
-
+    except FriendshipRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 @login_required
 def friends_online_status(request):
     friends = Friend.objects.friends(request.user)  # Assuming you're using Django-Friendship
