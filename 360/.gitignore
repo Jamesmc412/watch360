@@ -1,7 +1,0 @@
-Ignore Python cache directories
-pycache/
-*.py[cod]
-Ignore SQLite database files
-*.sqlite3
-Ignore macOS system files
-.DS_Store

@@ -29,6 +29,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
 from django.contrib.auth.models import User
 from .models import Profile
+from friendship.exceptions import AlreadyExistsError
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
@@ -193,24 +194,26 @@ def register_view(request):
 
 @login_required
 def homepage_view(request):
-
     user = request.user  # Get the logged-in user
-    # Retrieve only the videos for the currently logged-in user
-    user_videos = YouTubeData.objects.filter(user=request.user).order_by('-added_at')
 
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(user)
+
+    # Retrieve only the videos for the currently logged-in user
+    user_videos = YouTubeData.objects.filter(user=user).order_by('-added_at')
 
     # Get all pending friend requests
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
     # Create a list of pending friend requests
     pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+    
+    # Create a list of usernames from the friends queryset
+    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
         new_password = request.POST.get('changePassword')
 
-    
         # Update username if provided
         if new_username:
             user.username = new_username
@@ -221,66 +224,21 @@ def homepage_view(request):
             update_session_auth_hash(request, user)  # Keep user logged in after password change
 
         user.save()
-        return redirect('login')
-
-    # Create a list of usernames from the friends queryset
-    friends_data = []
-    for friend in friends:
-        friends_data.append({
-            'username': friend.username,
-        })
+        return redirect('login')  # Redirect to login page after changes
 
     context = {
         'user_videos': user_videos,
         'friends': friends_data,
-        "pending_requests": pending_requests_data, 
+        'pending_requests': pending_requests_data,
     }
 
     return render(request, 'watchapp/homepage.html', context)
-
-@login_required
-def settings_view(request):
-    user = request.user  # Get the logged-in user
-
-    if request.method == 'POST':
-        new_username = request.POST.get('changeUsername')
-        new_password = request.POST.get('changePassword')
-
-        # Update username if provided
-        if new_username:
-            user.username = new_username
-
-        # Update password if provided
-        if new_password:
-            user.set_password(new_password)
-            update_session_auth_hash(request, user)  # Keep user logged in after password change
-
-        user.save()
-        return redirect('login')
-
-    return render(request, 'watchapp/homepage.html', {"friends": friends_data})
 
 def logout_view(request):
     # Clear the session data
     request.session.flush()
     # Redirect to the login page
     return redirect('login')
-
-# View to display all users
-@login_required
-def user_list(request):
-    users = User.objects.exclude(id=request.user.id)
-    friends = Friend.objects.friends(request.user)
-    friend_requests_sent = Friend.objects.sent_requests(user=request.user)
-    friend_requests_received = Friend.objects.unrejected_requests(user=request.user)
-    
-    context = {
-        'users': users,
-        'friends': friends,
-        'friend_requests_sent': friend_requests_sent,
-        'friend_requests_received': friend_requests_received,
-    }
-    return render(request, 'watchapp/user_list.html', context)
 
 # View to send a friend request
 @login_required
