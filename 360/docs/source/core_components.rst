@@ -80,14 +80,14 @@ Purpose:
 
 Database:
 
-    There is no storage capability right now. It is instead stored in short term memory.
-..
-    Suggestions from ChatGPT
-    Purpose: Enables direct chat between friends.
-    Technology Stack: If using WebSockets or similar for real-time updates, specify the framework/library (e.g., Django Channels).
-    Chat Interface:
-    Describe how the chat window opens (e.g., clicking a friend’s name) and its features (like sending messages, seeing read receipts).
-    Mention UI/UX elements, such as timestamps or user avatars.
-    Data Handling:
-    Explain how messages are stored and retrieved, and any message history features.
-    Security considerations, such as end-to-end encryption if applicable.
+Purpose: 
+
+    Allows the storage of the history of the messages.
+    
+:Key Components:
+
+- Sender: Allows the message and admin to know who sent the message.
+- Receiver: Allows the message and admin to know where the message is suppose to go.
+- Timestamp: Allows the Admin know when this message was sent.
+- Message: Allows the admin and message know what the message says.
+
