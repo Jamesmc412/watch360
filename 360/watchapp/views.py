@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
@@ -187,11 +188,9 @@ def register_view(request):
             user = User.objects.create_user(
                 username=username, password=password, 
                 first_name=first_name, last_name=last_name)
-            messages.success(request, 'Registration successful! Redirecting to login...')
             return redirect('login')
 
     return render(request, 'watchapp/register.html', {'error': error})
-
 
 @login_required
 def homepage_view(request):
@@ -203,12 +202,13 @@ def homepage_view(request):
     # Get all friends of the logged-in user
     friends = Friend.objects.friends(user)
 
+    # Get all pending friend requests
+    pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
+    # Create a list of pending friend requests
+    pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
+    
     # Create a list of usernames from the friends queryset
-
     friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
-   
-    user = request.user  # Get the logged-in user
-
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
@@ -229,6 +229,7 @@ def homepage_view(request):
     context = {
         'user_videos': user_videos,
         'friends': friends_data,
+        'pending_requests': pending_requests_data,
     }
 
     return render(request, 'watchapp/homepage.html', context)
@@ -277,26 +278,33 @@ def send_friend_request(request, user_id):
 # View to accept a friend request
 @login_required
 def accept_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    try:
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+        
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to accept this request.")
+        
+        # Accept the request
+        friend_request.accept()
+        return redirect('homepage')  # Redirect to the homepage
     
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to accept this request.")
-    
-    # Accept the request
-    friend_request.accept()
-    return redirect('user_list')
-
+    except FriendshipRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 # View to reject a friend request
 @login_required
 def reject_friend_request(request, request_id):
-    friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+    try:
+        friend_request = get_object_or_404(FriendshipRequest, id=request_id)
+        
+        if friend_request.to_user != request.user:
+            return HttpResponse("You don't have permission to reject this request.")
+        
+        # Reject the request
+        friend_request.reject()
+        return redirect('homepage')  # Redirect to the homepage
     
-    if friend_request.to_user != request.user:
-        return HttpResponse("You don't have permission to reject this request.")
-    
-    # Reject the request
-    friend_request.reject()
-    return redirect('user_list')
+    except FriendshipRequest.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 
 # View to unfriend someone
 @login_required
