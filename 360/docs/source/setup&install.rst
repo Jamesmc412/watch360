@@ -90,8 +90,24 @@ Start the Django background services:
 
 .. code-block:: console
 
-    python manage.py runserver
+    python manage.py process_tasks
 
 Visit `http://localhost:8000/watchapp/login` to access the application.
 
 To access the admin page for database management, visit `http://localhost:8000/admin`.
+
+---------------------
+
+If you need to run it through a phone or another connect to allow multiple computers
+
+Start the Django development server:
+
+.. code-block:: console
+
+    python manage.py runserver  172.20.10.7:8000
+
+Start the Django background services:
+
+.. code-block:: console
+
+    python manage.py process_tasks
