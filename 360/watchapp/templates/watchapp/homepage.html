@@ -414,25 +414,32 @@
             flex-direction: column;
         }
 
-         /* Additional CSS for search task-rj */
-         .search-results.show {
-            display: block;
-            align-items: center;         /* Vertically align the button and username */
-            padding: 5px 0; 
+                .search-results div {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #242424;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
             color: white;
         }
+
         .friend-btn {
-            margin-left: 10px;
-            align-items: center; 
-            background-color: #107c10;
+            background-color: #4CAF50; /* Green background */
+            border: none;
+            color: white;
             padding: 5px 10px;
             border-radius: 4px;
-            margin-left: 10px;
-            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
         }
+
         .friend-btn:hover {
-            background-color: rgb(0, 252, 71); /* Add hover effect */
+            background-color: #107c10; /* Darker green on hover */
         }
+
         
         .profile-section {
             white-space: nowrap; /* Prevents line breaks */
