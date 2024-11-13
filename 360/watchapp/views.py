@@ -11,6 +11,7 @@ from django.http import JsonResponse
 import requests
 import json
 from .models import YouTubeData, OnlineStatus
+from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
 from datetime import timedelta
@@ -255,10 +256,20 @@ def user_list(request):
     }
     return render(request, 'watchapp/user_list.html', context)
 
-def get_online_status(request):
-    # Retrieve online status for all friends
-    online_status = OnlineStatus.objects.values('user__username', 'is_online')
-    return JsonResponse(list(online_status), safe=False)
+@csrf_exempt
+@require_POST
+def update_online_status(request):
+    
+    is_online = request.POST.get('is_online') == 'true';
+    
+    # Update the online status of the user
+    user = request.user
+    online_status, created = OnlineStatus.objects.get_or_create(user=user)
+    online_status.is_online = is_online
+    online_status.save()
+    
+    return JsonResponse({'status': 'success', 'is_online': online_status.is_online})
+        
 
 # View to send a friend request
 @login_required

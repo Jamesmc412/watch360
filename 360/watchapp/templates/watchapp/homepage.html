@@ -610,10 +610,17 @@
                             </div>
                             <h2>{{ friend.username }}</h2>
                             <div class="onlineStatusContainer">
-                                <p class="onlineStatus">Online: {{ friend.is_online }}</p>
+                                <p class="onlineStatus">Online:</p>
                                 <span class="dot2 {% if friend.is_online %}friend-online{% else %}friend-offline{% endif %}" id="friendVisDot-{{ friend.username }}"></span> <!-- Placeholder for status -->
                             </div>
-                            <p class="currently-watching">Currently watching: N/A</p>
+                            <p class="currently-watching">
+                                Currently watching: 
+                                {% if friend.current_video %}
+                                    {{ friend.current_video.video_title }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </p>
                         </div>
                     {% endfor %}
                 {% else %}
@@ -855,22 +862,37 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('/api/get_online_status/')
+            const onlineCheckbox = document.getElementById('onlineOffline');
+            
+            // Send AJAX request when the checkbox changes
+            onlineCheckbox.addEventListener('change', function() {
+                const isOnline = onlineCheckbox.checked; // Get the checkbox value (true or false)
+        
+                // Send AJAX request to update online status
+                fetch('/api/update-online-status/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': getCSRFToken(),  // Add CSRF token for security
+                    },
+                    body: new URLSearchParams({ 'is_online': isOnline.toString() })  // Convert to string
+                })
                 .then(response => response.json())
                 .then(data => {
-                    data.forEach(friend => {
-                        const friendDot = document.getElementById(`friendVisDot-${friend.user__username}`);
-                        if (friend.is_online) {
-                            friendDot.classList.add('friend-online');
-                            friendDot.classList.remove('friend-offline');
-                        } else {
-                            friendDot.classList.add('friend-offline');
-                            friendDot.classList.remove('friend-online');
-                        }
-                    });
+                    if (data.status === 'success') {
+                        console.log('Online status updated:', data.is_online);
+                    } else {
+                        console.error('Failed to update status');
+                    }
                 })
-                .catch(error => console.error('Error fetching online status:', error));
-        });
+                .catch(error => console.error('Error:', error));
+            });
+            
+            // Helper function to get CSRF token
+            function getCSRFToken() {
+                return document.querySelector('[name=csrfmiddlewaretoken]').value;
+            }
+        });        
     </script>
 
     <!-- Script to update the online status dot -->
