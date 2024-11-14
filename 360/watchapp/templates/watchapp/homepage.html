@@ -47,6 +47,13 @@
             color: var(--text-color);
             font-family: "Gotham Rounded", sans-serif;
         }
+        /* 
+            Header styling:
+            - Will house the profile section, title, and buttons
+            - Should be fixed at the top of the page
+            - Contains a dropdown for settings, notfications
+        */
+
         .header {
             position: relative;
             height: 60px;
@@ -68,6 +75,7 @@
             border-radius: 50%;
             display: inline-block;
         }
+        /* Define the styles for the so that the online and offline status can be displayed on dots */
         .offline {
             background-color: #bbbbbb;
         }
@@ -85,7 +93,7 @@
             display: flex;
             align-items: center;
         }
-
+        /* Dropdown container styling */
         .settings-dropdown {
             float: left;
             overflow: hidden;
@@ -129,7 +137,7 @@
             background-color: #333;
             color: #2ca243;
         }
-
+        /* copied from the settings page (app.css) */
         .setting {
             padding: 10px 20px;
             display: flex;
@@ -236,6 +244,7 @@
             color: white;
         }
 
+        /* container for video cards and friend cards with flexbox to split page */
         .main-content {
             height: 100vh; /* Full viewport height */
             width: 100vw;
@@ -244,7 +253,9 @@
             display: flex;
             flex-direction: column;
         }
-        .top-feature {
+
+        /* video cards feature */
+        .top-feature { 
             height: 50vh; /* 25% of the viewport height */
             padding-bottom: 20px;
         }
@@ -267,6 +278,7 @@
             text-align: center;
             cursor: pointer;
         }
+        /* style the containers for onlineVisibility*/
         .onlineStatusContainer {
             display: flex;
             justify-content: center;
@@ -276,7 +288,7 @@
             font-size: 14px;
             color: #107c10;
         }
-        /* Define the styles for the online and offline status dots */
+        /* This updates the onlineVisibility for each friend card*/
         .dot2 {
             margin-left: 10px;
             width: 10px;
@@ -414,7 +426,7 @@
             flex-direction: column;
         }
 
-                .search-results div {
+        .search-results div {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -519,7 +531,7 @@
         }          
 </style>
     
-    <!-- Add jQuery for easy AJAX calls - rj -->
+    <!-- Add jQuery for easy AJAX calls -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -530,12 +542,15 @@
             <img src="{{ user.profile.avatar.url }}" alt="{{ user.username }}" class="avatar-icon" />
             <span>{{ user.username }}</span>
         </div>
+        <!-- h2 shows the online status of the user that they chose on the settings page (james) -->
         <h2>Hello, {{user.username}} &nbsp; 
             <span class="dot" id="onlineVisDot"></span>
         </h2>
         <div class="header-buttons">
+            <!-- notifications dropdown menu -->
             <button id="notifications-button">Notifications</button>
             <div id="notifications-dropdown" class="dropdown-content">
+                <!-- gets open friend requests from the database -->
                 {% if pending_requests %}
                     <ul>
                         {% for request in pending_requests %}
@@ -556,6 +571,8 @@
                     <p>No new notifications</p>
                 {% endif %}
             </div>
+            
+            <!-- settings dropdown menu - james  -->
             <button id="settings-button">Settings</button>
             <div id="settingsDropdown" class="dropdown-content">
                 <form method="POST" action="{% url 'homepage' %}">
@@ -603,38 +620,47 @@
             <input type="text" id="search-input" placeholder="Search..." required>
             <button type="submit">Search</button>
         </form>
-        <div id="search-results" class="search-results">     <!-- search task-rj-->
+        <div id="search-results" class="search-results">     
             <!-- Autofill results will be injected here -->
         </div>
         <div class="youtube-search">
             <h3>Search YouTube Video</h3>
             <form id="youtube-search-form">
+                <!-- Input field for YouTube video URL -->
                 <input type="text" id="youtube-url" placeholder="Enter YouTube URL" required>
+                <!-- Submit button to search for video -->
                 <button type="submit">Search</button>
             </form>
+            <!-- Paragraph to display the video title after search -->
             <p id="video-title" style="margin-top: 10px; color: white;"></p>
         </div>
     </div>
 
     <div class="main-content">
-        <!-- New top feature section -->
+        <!-- Section for displaying recently added videos -->
         <div class="top-feature">
             <h2>Your Recently Added Videos</h2>
             <div class="video-list">
+                <!-- Check if user has added any videos -->
                 {% if user_videos %}
                     {% for video in user_videos %}
+                        <!-- Display each video as a card with title, link, and delete option -->
                         <div class="video-card">
                             <h2>{{ video.video_title }}</h2>
+                            <!-- Link to view the video on YouTube in a new tab -->
                             <p><a href="{{ video.video_url }}" target="_blank">Watch Video</a></p>
+                            <!-- Show the date the video was added -->
                             <p class="currently-watching">Added on: {{ video.added_at }}</p>
                             <p>
+                                <!-- Delete link with a confirmation prompt -->
                                 <a href="{% url 'delete_video' video.id %}" 
-                                onclick="return confirm('Are you sure you want to delete this video?');" 
-                                style="color: red; text-decoration: none;">Delete</a>
+                                   onclick="return confirm('Are you sure you want to delete this video?');" 
+                                   style="color: red; text-decoration: none;">Delete</a>
                             </p>
                         </div>
                     {% endfor %}
                 {% else %}
+                    <!-- Message if the user has not added any videos -->
                     <p>You haven't added any videos yet.</p>
                 {% endif %}
             </div>
@@ -644,6 +670,7 @@
         <div class="friend-section">
             <h2>Your Friends</h2>
             <div class="friend-list">
+                <!-- retrieve friends from the database -->
                 {% if friends %}
                     {% for friend in friends %}
                         <div class="friend-card" onclick="openChat('{{ friend.username }}')">
@@ -651,6 +678,8 @@
                                 <img src="{{ friend.avatar }}" alt="{{ friend.username }}'s avatar" class="friend-avatar" />
                             </div>
                             <h2>{{ friend.username }}</h2>
+
+                            <!-- the functionality to display the onlineVisibility and video-watching of each friend card  (james)-->
                             <div class="onlineStatusContainer">
                                 <p class="onlineStatus">Online:</p>
                                 <span class="dot2 {% if friend.is_online %}friend-online{% else %}friend-offline{% endif %}" id="friendVisDot-{{ friend.username }}"></span> <!-- Placeholder for status -->
@@ -672,74 +701,79 @@
         </div>
     </div>
 
-    <!-- Chat Widget -->
-    <div id="chat-widget" class="chat-widget">
-        <div class="chat-header">
-            <span>Chat with <span id="chat-friend-name">Friend</span></span>
-            <button class="chat-close" onclick="closeChat()">X</button>
-        </div>
-        <div class="chat-body" id="chat-body">
-            <!-- Messages will be displayed here dynamically -->
-        </div>
-        <div class="chat-input">
-            <textarea id="chat-input-message" placeholder="Type your message..."></textarea>
-            <button id="chat-send-button" class="chat-send-button">Send</button>
-        </div>
+<!-- Chat Widget -->
+<div id="chat-widget" class="chat-widget">
+    <div class="chat-header">
+        <!-- Header displays friend's name and a button to close the chat -->
+        <span>Chat with <span id="chat-friend-name">Friend</span></span>
+        <button class="chat-close" onclick="closeChat()">X</button>
     </div>
+    <div class="chat-body" id="chat-body">
+        <!-- Messages will be displayed here dynamically -->
+    </div>
+    <div class="chat-input">
+        <!-- Input area for typing messages -->
+        <textarea id="chat-input-message" placeholder="Type your message..."></textarea>
+        <button id="chat-send-button" class="chat-send-button">Send</button>
+    </div>
+</div>
+
     <script>
-        const chatHistory = {};
-        const chatSocket = new WebSocket("ws://" + window.location.host + "/");
+        const chatHistory = {}; // Store chat history for each friend
+        const chatSocket = new WebSocket("ws://" + window.location.host + "/"); // Establish WebSocket connection
         const currentUsername = "{{ request.user.username }}"; // Current user's username
-    
+
         // WebSocket event listeners
         chatSocket.onopen = function () {
-            console.log("Connected to WebSocket.");
+            console.log("Connected to WebSocket."); // Connection opened
         };
         
         chatSocket.onclose = function () {
             console.log("WebSocket connection closed. Attempting to reconnect...");
+            // Attempt to reconnect after 3 seconds if WebSocket connection closes
             setTimeout(() => {
                 chatSocket = new WebSocket("ws://" + window.location.host + "/");
             }, 3000);
         };
 
-        // Close the chat widget
+        // Close the chat widget by sliding it out of view
         function closeChat() {
-            document.getElementById('chat-widget').style.right = '-400px'; // Slide out widget
+            document.getElementById('chat-widget').style.right = '-400px';
         }
-    
-        // Display chat history in the chat body
+
+        // Display chat history in the chat body for a specific friend
         function displayChatHistory(friendName) {
             const chatBody = document.getElementById('chat-body');
-            chatBody.innerHTML = ''; // Clear chat body
+            chatBody.innerHTML = ''; // Clear existing messages
 
             if (chatHistory[friendName]) {
                 chatHistory[friendName].forEach(msg => {
+                    // Create a chat bubble for each message
                     const messageDiv = document.createElement('div');
                     messageDiv.className = msg.sender === 'me' ? 'chat-bubble sender' : 'chat-bubble receiver';
-                    messageDiv.textContent = msg.message; // Display the actual message content
+                    messageDiv.textContent = msg.message; // Set message content
                     chatBody.appendChild(messageDiv);
                 });
 
-                // Scroll to the bottom of the chat
+                // Scroll to the bottom of the chat to show the latest message
                 chatBody.scrollTop = chatBody.scrollHeight;
             }
         }
 
-    
-        // Send message via WebSocket
+        // Send a message via WebSocket
         function sendMessage() {
             const messageInput = document.getElementById('chat-input-message');
             const messageText = messageInput.value;
             const receiverName = document.getElementById('chat-friend-name').textContent;
-            
+
+            // Check WebSocket connection status
             if (chatSocket.readyState !== WebSocket.OPEN) {
                 console.log("WebSocket connection is closed.");
                 alert("Connection lost. Please try again later.");
                 return;
             }
 
-
+            // Send the message if text is present
             if (messageText) {
                 chatSocket.send(JSON.stringify({
                     message: messageText,
@@ -747,7 +781,7 @@
                     receiver: receiverName
                 }));
 
-                // Display the message immediately only if it’s not already displayed
+                // Display the message in the chat body
                 const chatBody = document.getElementById('chat-body');
                 const messageDiv = document.createElement('div');
                 messageDiv.className = 'chat-bubble sender';
@@ -761,16 +795,16 @@
         }
 
         chatSocket.onerror = function (error) {
-            console.error("WebSocket error observed:", error);
+            console.error("WebSocket error observed:", error); // Log WebSocket errors
         };
 
-        // When opening chat with a friend, pass the friend's name as the receiver
+        // Open chat with a specific friend and load chat history
         function openChat(friendName) {
-            document.getElementById('chat-friend-name').textContent = friendName;
-            document.getElementById('chat-widget').style.right = '0px';
-            document.getElementById('chat-input-message').value = '';
-            
-            // Request chat history every time the chat is opened
+            document.getElementById('chat-friend-name').textContent = friendName; // Set friend's name in header
+            document.getElementById('chat-widget').style.right = '0px'; // Slide in the chat widget
+            document.getElementById('chat-input-message').value = ''; // Clear message input field
+
+            // Function to request chat history
             const requestChatHistory = () => {
                 chatSocket.send(JSON.stringify({
                     type: "load_history",
@@ -778,17 +812,17 @@
                 }));
             };
 
-            // Clear existing messages and request fresh history
+            // Clear existing chat history and request fresh history
             chatHistory[friendName] = [];
 
+            // Request history when WebSocket is open; otherwise, retry until open
             if (chatSocket.readyState === WebSocket.OPEN) {
                 requestChatHistory();
             } else {
-                // Retry if WebSocket isn't open
                 const intervalId = setInterval(() => {
                     if (chatSocket.readyState === WebSocket.OPEN) {
                         requestChatHistory();
-                        clearInterval(intervalId);
+                        clearInterval(intervalId); // Stop retrying once open
                     }
                 }, 100);
             }
@@ -796,27 +830,28 @@
             displayChatHistory(friendName);
         }
 
-
-    
-        // When receiving messages, display only those with matching sender and receiver
+        // WebSocket onmessage event for receiving and displaying new messages or history
         chatSocket.onmessage = function (e) {
             const data = JSON.parse(e.data);
             const friendName = document.getElementById('chat-friend-name').textContent;
 
+            // Handle received chat history
             if (data.type === "chat_history") {
                 chatHistory[friendName] = data.messages.map(msg => ({
                     sender: msg.sender === currentUsername ? 'me' : msg.sender,
-                    message: msg.message // Store with "message" key for consistency
+                    message: msg.message
                 }));
                 displayChatHistory(friendName);
 
+            // Handle new incoming messages
             } else if (data.type === "new_message") {
-                if (data.sender === currentUsername) return;
+                if (data.sender === currentUsername) return; // Skip if the message is from the current user
 
                 if (!chatHistory[friendName]) {
                     chatHistory[friendName] = [];
                 }
 
+                // Check for duplicates to prevent re-adding messages
                 const isDuplicate = chatHistory[friendName].some(msg => msg.message === data.message && msg.sender === data.sender);
                 if (!isDuplicate) {
                     chatHistory[friendName].push({
@@ -834,7 +869,7 @@
             }
         };
 
-    
+        
         // Button click and Enter key events to send messages
         document.getElementById('chat-send-button').onclick = sendMessage;
         document.getElementById('chat-input-message').onkeyup = function (e) {
@@ -906,60 +941,73 @@
     </script>
     <!-- AJAX Script -->
     <script>
+        // Add an event listener to handle form submission
         document.getElementById('youtube-search-form').addEventListener('submit', async function (event) {
-        event.preventDefault(); // Prevent default form behavior
+            event.preventDefault(); // Prevent default form behavior to control submission with JavaScript
 
-        const url = document.getElementById('youtube-url').value;
-        const csrfToken = '{{ csrf_token }}'; // CSRF token for security
+            const url = document.getElementById('youtube-url').value; // Get the entered YouTube URL
+            const csrfToken = '{{ csrf_token }}'; // CSRF token for security, required for POST requests
 
-        try {
-            const response = await fetch("{% url 'search_video' %}", {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-                body: JSON.stringify({ youtube_url: url })
-            });
+            try {
+                // Send a POST request to the Django 'search_video' view
+                const response = await fetch("{% url 'search_video' %}", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json', // Specify JSON content
+                        'X-CSRFToken': csrfToken, // Include CSRF token in headers for security
+                    },
+                    body: JSON.stringify({ youtube_url: url }) // Send URL data as JSON in the request body
+                });
 
-            if (response.ok) {
-                const data = await response.json();
-                document.getElementById('video-title').innerText = 
-                    data.title ? `Video Title: ${data.title}` : 'Title not found.';
+                if (response.ok) {
+                    const data = await response.json(); // Parse JSON response data
+                    // Update the UI with the fetched video title or an error message if not found
+                    document.getElementById('video-title').innerText = 
+                        data.title ? `Video Title: ${data.title}` : 'Title not found.';
 
-                setTimeout(() => {
-                    location.reload(); // Reload the page to reflect changes
-                }, 1000);
-            } else {
-                document.getElementById('video-title').innerText = 'Error fetching video title.';
+                    // Reload the page after a brief delay to update the displayed videos
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    // Display an error message if the response is not successful
+                    document.getElementById('video-title').innerText = 'Error fetching video title.';
+                }
+            } catch (error) {
+                // Log and display an error message if the fetch request fails
+                console.error("Error:", error);
+                document.getElementById('video-title').innerText = 'An error occurred.';
             }
-        } catch (error) {
-            console.error("Error:", error);
-            document.getElementById('video-title').innerText = 'An error occurred.';
-        }
         });
 
-        let previousVideoCount = {{ user_videos.count }};  // Store the initial video count
+        // Store the initial video count to detect changes
+        let previousVideoCount = {{ user_videos.count }};
 
+        // Function to poll server for current video status periodically
         async function pollVideoStatus() {
             try {
+                // Send a GET request to the 'check_videos_status' view to get current video count
                 const response = await fetch("{% url 'check_videos_status' %}");
                 const data = await response.json();
                 const currentVideoCount = data.video_count;
 
+                // If video count has decreased, reload the page to reflect the change
                 if (currentVideoCount < previousVideoCount) {
                     location.reload();
                 }
             } catch (error) {
+                // Log any error encountered during polling
                 console.error("Error checking video status:", error);
             }
         }
 
+        // Set a polling interval to check video status every 10 seconds
         setInterval(pollVideoStatus, 10000);
     </script>
 
+
     <script>
-        // script to generate notifications and settings dropdown menus
+        // script to generate notifications and settings dropdown menus made by copilot
 
         $(document).ready(function() {
             $('#notifications-button').click(function() {
@@ -985,6 +1033,7 @@
     </script>
 
     <script>
+        // script to show the settingsDropdown when the settings button is clicked (james)
         document.addEventListener('DOMContentLoaded', function() {
             const settingsButton = document.getElementById('settings-button');
             const settingsDropdown = document.getElementById('settingsDropdown');
@@ -1007,6 +1056,7 @@
     </script>
 
     <script>
+        // script to update the online status of each friend card's dot (james)
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
             
@@ -1041,7 +1091,7 @@
         });        
     </script>
 
-    <!-- Script to update the online status dot -->
+    <!-- Script to update the online status dot (chatgpt) (james) --> 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
@@ -1077,7 +1127,7 @@
         });        
     </script>
 
-    <!-- Script to update the online status dot -->
+    <!-- Script to update the online status dot for the user's onlineVisibility (chatgpt edited, not generated)  (james) -->
     <script>
         const onlineVis = document.getElementById('onlineVisDot');
 
@@ -1109,7 +1159,7 @@
         setInterval(updateDarkMode, 100);
     </script>
     <script>
-        // Function to fetch friends' online status
+        // Function to fetch friends' online status (chatgpt generated) (james)
         function fetchFriendsOnlineStatus() {
           fetch('{% url "friends_online_status" %}')
             .then(response => response.json())
@@ -1137,6 +1187,7 @@
         setInterval(fetchFriendsOnlineStatus, 10000);
     </script>
     <script>
+        // redundant function to update the online status dot for the user's onlineVisibility (james)
         document.addEventListener('DOMContentLoaded', function() {
             const onlineCheckbox = document.getElementById('onlineOffline');
             
@@ -1172,6 +1223,8 @@
     </script> 
 
     <script> 
+
+        // copied from the settings page javascript code to get certain things to work on the homepage (james)
 
         // variables to get the status of the checkbox and dropdown menu
         const lightDarkMode = document.getElementById('lightDarkMode');

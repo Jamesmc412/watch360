@@ -14,4 +14,4 @@ To use the YouTube video input feature, follow these steps:
 
 Example:
 ---------
-https://www.youtube.com/watch?v=dQw4w9WgXcQ
+https://youtu.be/91IoyIRV8C0

@@ -12,3 +12,7 @@ To friend someone on watch360, follow these steps:
 3. **View Friends List**:
    - Once they accept your friend request, they will appear on your friends list on the homepage.
    - You can see if they are online and what they are currently watching on YouTube.
+
+Example:
+---------
+https://youtu.be/69QjANMqsB0

@@ -32,7 +32,8 @@ class Profile(models.Model):
             img.thumbnail(output_size)
             # overwrite the larger image
             img.save(self.avatar.path) 
-            
+
+# this model will store the online status of the user and the video they are watching so that it can be viewed on the friend-cards (james)
 class OnlineStatus(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     video_title= models.ForeignKey(YouTubeData, on_delete=models.SET_NULL, blank=True, null=True)
@@ -43,6 +44,8 @@ class OnlineStatus(models.Model):
             
             
 # Create your models here.
+#This model creates the chat/messages to be stored correct.
+#It stores the sender, receiver, the message, and the timestamp.
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE, default=1)  # Set a default user ID
     receiver = models.ForeignKey(User, related_name='received_messages', on_delete=models.CASCADE, default=1)
