@@ -1,86 +1,84 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, update_session_auth_hash
 from .forms import LoginForm
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from django.contrib import messages
-from django.contrib.auth import update_session_auth_hash
 from bs4 import BeautifulSoup
-from django.http import JsonResponse
 import requests
 import json
-from .models import YouTubeData, OnlineStatus
-from django.views.decorators.http import require_POST
-from .models import YouTubeData, OnlineStatus
-from django.views.decorators.http import require_POST
+from .models import YouTubeData, OnlineStatus, Profile
 from django.views.decorators.csrf import csrf_exempt
-from django.utils import timezone
 from datetime import timedelta
-from django.shortcuts import get_object_or_404
-from django.utils.timezone import now
-from django.db.models import F
-from datetime import timedelta
+from django.db.models import F, Q # added for search functionality
 from background_task import background
 from friendship.models import Friend, FriendshipRequest
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Q  # Added for search functionality
 from friendship.exceptions import AlreadyExistsError
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django import forms
-from django.contrib.auth.models import User
-from .models import Profile
 from django.db import transaction
 from friendship.exceptions import AlreadyExistsError
+
 
 def get_video_data(video_url):
     """Fetch video title and duration from YouTube API."""
     try:
+        # Extract video ID from URL if it contains 'v=' parameter
         video_id = video_url.split('v=')[1].split('&')[0] if 'v=' in video_url else None
         if not video_id:
+            # Return error if video ID cannot be extracted
             return None, None, "Invalid YouTube URL"
 
+        # API endpoint with user's API key and extracted video ID
         api_key = 'AIzaSyB0ck1zWAO-20vOaNRdgYu7-yTNCS0jtZE'  # Replace with your API key
         endpoint = f'https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id={video_id}&key={api_key}'
         
+        # Make API request to fetch video data
         response = requests.get(endpoint)
-        response.raise_for_status()
+        response.raise_for_status()  # Raise an error for bad responses
         
+        # Parse JSON response
         data = response.json()
         if data['items']:
+            # Extract video title and duration if video data is found
             video_title = data['items'][0]['snippet']['title']
             duration = data['items'][0]['contentDetails']['duration']
-            duration_seconds = convert_duration_to_seconds(duration)
+            duration_seconds = convert_duration_to_seconds(duration)  # Convert duration to seconds
             return video_title, duration_seconds, None
+        # Return error if video is not found
         return None, None, "Video not found"
 
     except Exception as e:
+        # Handle and print any error that occurs during the API request
         print(f"Error fetching video data: {e}")
         return None, None, "Could not retrieve video data"
-    
-    
-@csrf_exempt  # Ensure AJAX requests work
-@login_required
+
+
+@csrf_exempt  # Exempt from CSRF checks to allow AJAX requests
+@login_required  # Require user to be logged in to access this view
 def search_video(request):
     if request.method == "POST":
         try:
+            # Parse JSON data from the request body
             data = json.loads(request.body)
             video_url = data.get("youtube_url")
 
+            # Check if a YouTube URL is provided
             if not video_url:
                 return JsonResponse({'error': 'YouTube URL is required'}, status=400)
 
-            # Get video data (title and duration)
+            # Retrieve video title and duration using helper function
             vid_title, duration, error = get_video_data(video_url)
             if error:
+                # Return an error if video data retrieval fails
                 return JsonResponse({'error': error}, status=400)
 
-            # Delete previous videos of this user
+            # Clear any previous video entries for the current user
             YouTubeData.objects.filter(user=request.user).delete()
 
-            # Save the new video data
+            # Create a new video data entry in the database for the user
             new_video = YouTubeData.objects.create(
                 user=request.user,
                 video_url=video_url,
@@ -88,20 +86,25 @@ def search_video(request):
                 duration=duration
             )
             
-            # Update the online status of the user
+            # Update user's online status with the new video title
             OnlineStatus.objects.filter(user=request.user).update(video_title=new_video, is_online=True)
 
-            # Schedule deletion based on video duration
+            # Schedule a task to delete the video after its duration has elapsed
             delete_video_task(new_video.id, schedule=timedelta(seconds=duration))
 
-            # Return success response
+            # Return success response with video title
             return JsonResponse({'message': 'Video scheduled for deletion', 'title': vid_title})
 
         except json.JSONDecodeError:
+            # Handle invalid JSON data
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
+    # Handle non-POST requests
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
+
+
+# this function should update the online status of the user for already-registered users (james)
 @csrf_exempt
 @login_required
 def update_online_status(request):
@@ -117,57 +120,75 @@ def update_online_status(request):
             return JsonResponse({'status': 'error', 'message': 'OnlineStatus not found.'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-# Background task to delete video after the duration
+# Background task to delete video after the specified duration
 @background
 def delete_video_task(video_id):
     try:
+        # Retrieve video by ID and delete it from the database
         video = YouTubeData.objects.get(id=video_id)
         video.delete()
         print(f"Video {video_id} deleted after its duration.")
     except YouTubeData.DoesNotExist:
+        # Handle case where video does not exist in the database
         print(f"Video {video_id} not found.")
 
-        
-@login_required
+
+@login_required  # Ensure the user is authenticated
 def check_videos_status(request):
+    # Get the count of videos for the logged-in user
     video_count = YouTubeData.objects.filter(user=request.user).count()
+    # Return the count as a JSON response
     return JsonResponse({'video_count': video_count})
 
-@login_required
+
+@login_required  # Ensure the user is authenticated
 def delete_video(request, video_id):
+    # Retrieve the video by ID for the logged-in user, or return 404 if not found
     video = get_object_or_404(YouTubeData, id=video_id, user=request.user)
-    video.delete()  # Delete immediately when requested from the UI
+    # Delete the video immediately when requested
+    video.delete()
+    # Redirect the user to the homepage after deletion
     return redirect('homepage')
-    
+
+
 def convert_duration_to_seconds(duration):
-    """Convert ISO 8601 duration to seconds."""
-    import isodate  # Make sure the 'isodate' library is installed
+    """Convert ISO 8601 duration format to total seconds."""
+    import isodate  # Ensure the 'isodate' library is installed to parse ISO 8601 durations
     try:
+        # Parse duration and return it in seconds
         return int(isodate.parse_duration(duration).total_seconds())
     except Exception:
-        return 0  # If conversion fails, return 0 seconds
+        # Return 0 seconds if parsing fails
+        return 0
+
 
 def result(request):
     """Scrape the YouTube page for the video title."""
     if request.method == 'POST':
+        # Get the YouTube URL from the POST request data
         youtube_url = request.POST.get('youtube_url')
 
-        # Make a request to the YouTube page
+        # Make an HTTP request to the YouTube page
         response = requests.get(youtube_url)
         if response.status_code == 200:
+            # Parse the page content using BeautifulSoup
             soup = BeautifulSoup(response.content, 'html.parser')
 
-            # Extract the video title
+            # Extract the video title from the meta tag
             title = soup.find('meta', property='og:title')
             video_title = title['content'] if title else 'Title not found'
 
-            # Pass the title to the template
+            # Render the homepage template with the extracted video title
             return render(request, 'watchapp/homepage.html', {'video_title': video_title})
         else:
+            # Return an error message if page retrieval fails
             return render(request, 'watchapp/homepage.html', {'error': 'Could not retrieve the page.'})
+    # Render the homepage template for non-POST requests
     return render(request, 'watchapp/homepage.html')
 
+
 def chat_view(request):
+    # Render the chat page template for chat functionality
     return render(request, 'chat.html')
 
 
@@ -211,8 +232,10 @@ def register_view(request):
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
 
+        # username must be unique
         if User.objects.filter(username=username).exists():
             error = "The username is already taken!"
+        # password must be at least 6 characters
         elif len(password) < 6:
             error = "Password must have at least 6 characters."
         elif password != confirm_password:
@@ -259,6 +282,7 @@ def homepage_view(request):
 
         user.save()
         return redirect('login') # Redirect to the login page after updating the user
+    
      # Create a list of usernames from the friends queryset
     friends_data = []
     for friend in friends:
@@ -279,7 +303,8 @@ def homepage_view(request):
     return render(request, 'watchapp/homepage.html', context)
 
 def logout_view(request):
-    OnlineStatus.objects.filter(user=request.user).update(is_online=False)
+    # when a user logs out, set their online status to False (james)
+    OnlineStatus.objects.filter(user=request.user).update(is_online=False) 
     # Clear the session data
     request.session.flush()
     # Redirect to the login page
@@ -301,8 +326,10 @@ def send_friend_request(request, user_id):
             user                    # The recipient
         )
         return JsonResponse({'status': 'success'})
+    
+    # Handle the case when the request was already sent
     except AlreadyExistsError:
-        return JsonResponse({'status': 'already_requested'})  # Handle the case when the request was already sent
+        return JsonResponse({'status': 'already_requested'})  
 
 # View to accept a friend request
 @login_required
@@ -310,6 +337,7 @@ def accept_friend_request(request, request_id):
     try:
         friend_request = get_object_or_404(FriendshipRequest, id=request_id)
         
+        # Make sure the right user is accepting the request
         if friend_request.to_user != request.user:
             return HttpResponse("You don't have permission to accept this request.")
         
@@ -317,8 +345,10 @@ def accept_friend_request(request, request_id):
         friend_request.accept()
         return redirect('homepage')  # Redirect to the homepage
     
+    # Handle the case when the request does not exist
     except FriendshipRequest.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
+
 @login_required
 def friends_online_status(request):
     friends = Friend.objects.friends(request.user)  # Assuming you're using Django-Friendship
@@ -337,6 +367,7 @@ def reject_friend_request(request, request_id):
     try:
         friend_request = get_object_or_404(FriendshipRequest, id=request_id)
         
+        # Make sure the correct user is rejecting the request
         if friend_request.to_user != request.user:
             return HttpResponse("You don't have permission to reject this request.")
         
@@ -344,6 +375,7 @@ def reject_friend_request(request, request_id):
         friend_request.reject()
         return redirect('homepage')  # Redirect to the homepage
     
+    # Handle the case when the request does not exist
     except FriendshipRequest.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'Friend request does not exist'}, status=404)
 
@@ -356,7 +388,7 @@ def unfriend(request, user_id):
     Friend.objects.remove_friend(request.user, user)
     return redirect('user_list')
     
-# search taask -rj
+# search taask 
 @login_required
 def search_users(request):
     query = request.GET.get('q', None)

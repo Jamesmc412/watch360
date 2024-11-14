@@ -6,10 +6,12 @@ from .models import Message
 from django.db.models import Q
 import asyncio
 
-
+# This sets the model to be used
 User = get_user_model()
 
+#Class for Chat
 class ChatConsumer(AsyncWebsocketConsumer):
+    #Function for setting up connection
     async def connect(self):
         self.roomGroupName = f"user_{self.scope['user'].username}"
         await self.channel_layer.group_add(self.roomGroupName, self.channel_name)
@@ -24,6 +26,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if receiver_name:
             await self.send_chat_history(receiver_name)
 
+    #Function for setting up the receiver end
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
 
@@ -77,6 +80,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }))
             print("Message sent back to sender:", message)
 
+    #Sets up what is stored in database and the message handling
     async def new_message(self, event):
         # Extract message details from the event
         message = event.get("message")  # Use .get() to safely retrieve the key
@@ -101,6 +105,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         print("Message sent to WebSocket client:", message)
 
 
+    #Displays the Chat History
     @sync_to_async
     def get_chat_history(self, friend_name):
         try:
@@ -115,6 +120,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print(f"User not found in chat history: {e}")
             return []
 
+    #Sets up sending to the user
     async def send_chat_history(self, friend_name):
         messages = await self.get_chat_history(friend_name)
         formatted_messages = [
@@ -130,6 +136,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "messages": formatted_messages
         }))
 
+    #Saves the message for use
     @sync_to_async
     def save_message(self, sender_username, receiver_username, message):
         try:
@@ -139,5 +146,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except User.DoesNotExist as e:
             print(f"Error saving message: {e}")
 
+    #Disconnects the User if chat is closed
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.roomGroupName, self.channel_name)
