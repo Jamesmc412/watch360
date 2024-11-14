@@ -263,9 +263,6 @@ def homepage_view(request):
     pending_requests = FriendshipRequest.objects.filter(to_user=request.user, rejected__isnull=True)
     # Create a list of pending friend requests
     pending_requests_data = [{'request_id': req.id, 'id': req.from_user.id, 'username': req.from_user.username} for req in pending_requests]
-    
-    # Create a list of usernames from the friends queryset
-    friends_data = [{'username': friend.username, 'avatar': friend.profile.avatar.url} for friend in friends]
 
     if request.method == 'POST':
         new_username = request.POST.get('changeUsername')
@@ -288,8 +285,10 @@ def homepage_view(request):
     for friend in friends:
         online_status = OnlineStatus.objects.filter(user=friend).first()
         latest_video = YouTubeData.objects.filter(user=friend).order_by('-added_at').first()
+        avatar_url = friend.profile.avatar.url if friend.profile.avatar else '/media/default.jpg'
         friends_data.append({
             'username': friend.username,
+            'avatar': avatar_url,
             'is_online': online_status.is_online if online_status else False,
             'video': latest_video  # Add the video object to the friend's data
         })
