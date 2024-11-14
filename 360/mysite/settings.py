@@ -25,8 +25,13 @@ SECRET_KEY = 'django-insecure-4tp!*&u*%#(r@z3r=4km7al#^x10lqu3e&9@ba+9)+(pp^ox4d
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+<<<<<<< Updated upstream
 #If you want to use a different pc while running the code on another pc you need to change it to whatever host you are using
 ALLOWED_HOSTS = ['192.168.1.102', 'localhost']
+=======
+ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['192.168.1.102', 'localhost']
+>>>>>>> Stashed changes
 
 
 # Application definition

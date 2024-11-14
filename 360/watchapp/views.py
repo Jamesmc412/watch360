@@ -388,7 +388,7 @@ def unfriend(request, user_id):
     Friend.objects.remove_friend(request.user, user)
     return redirect('user_list')
     
-# search taask -rj
+# search taask 
 @login_required
 def search_users(request):
     query = request.GET.get('q', None)
