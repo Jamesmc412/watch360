@@ -5,7 +5,7 @@ build:
     python: "3"
 
 sphinx:
-  configuration: /360/docs/source/conf.py
+  configuration: 360/docs/source/conf.py
 
 formats:
   - pdf
